@@ -16,8 +16,9 @@ import type { TableRound, Difficulty, TableType, RoundCount } from '../types.js'
 @localized()
 @customElement('app-table-setup')
 export class AppTableSetup extends LitElement {
-  @property() mode: TableType = 'co2';
+  @property() mode: TableType | '' = '';
 
+  @state() private _mode: TableType = 'co2';
   @state() private _pb = 0;
   @state() private _difficulty: Difficulty = 'normal';
   @state() private _roundCount: RoundCount = 8;
@@ -52,6 +53,40 @@ export class AppTableSetup extends LitElement {
 
       .page-title.co2 { color: var(--color-hold); }
       .page-title.o2 { color: var(--color-breathe); }
+
+      .tabs {
+        display: flex;
+        gap: var(--spacing-xs);
+        background: var(--color-bg-surface);
+        border-radius: var(--radius-full);
+        padding: 3px;
+        border: 1px solid var(--color-border);
+      }
+
+      .tab-btn {
+        flex: 1;
+        padding: var(--spacing-sm) var(--spacing-md);
+        border: none;
+        border-radius: var(--radius-full);
+        background: transparent;
+        color: var(--color-text-secondary);
+        font-size: var(--font-sm);
+        font-weight: 700;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        font-family: inherit;
+        letter-spacing: 0.03em;
+      }
+
+      .tab-btn.active.co2 {
+        background: var(--color-hold);
+        color: #fff;
+      }
+
+      .tab-btn.active.o2 {
+        background: var(--color-breathe);
+        color: #fff;
+      }
 
       .info-btn {
         background: none;
@@ -254,20 +289,30 @@ export class AppTableSetup extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
+    if (this.mode) this._mode = this.mode;
     this._load();
   }
 
   updated(changed: Map<string, unknown>): void {
-    if (changed.has('mode')) {
+    if (changed.has('mode') && this.mode) {
+      this._mode = this.mode;
       this._load();
     }
+    if (changed.has('_mode') && !changed.has('mode')) {
+      this._load();
+    }
+  }
+
+  private async _switchMode(m: TableType): Promise<void> {
+    this._mode = m;
+    this._showTooltip = false;
   }
 
   private async _load(): Promise<void> {
     const settings = await getSettings();
     this._pb = settings.personalBest;
     this._difficulty =
-      this.mode === 'co2' ? settings.co2Difficulty : settings.o2Difficulty;
+      this._mode === 'co2' ? settings.co2Difficulty : settings.o2Difficulty;
     this._roundCount = settings.roundCount;
     this._customRounds = settings.customRounds;
     this._regenerate();
@@ -285,7 +330,7 @@ export class AppTableSetup extends LitElement {
     }
     const rounds = this._resolvedRounds;
     this._table =
-      this.mode === 'co2'
+      this._mode === 'co2'
         ? generateCO2Table(this._pb, this._difficulty, rounds)
         : generateO2Table(this._pb, this._difficulty, rounds);
     this._editedTable = this._table.map((r) => ({ ...r }));
@@ -294,7 +339,7 @@ export class AppTableSetup extends LitElement {
 
   private async _setDifficulty(d: Difficulty): Promise<void> {
     this._difficulty = d;
-    const key = this.mode === 'co2' ? 'co2Difficulty' : 'o2Difficulty';
+    const key = this._mode === 'co2' ? 'co2Difficulty' : 'o2Difficulty';
     await saveSettings({ [key]: d });
     this._regenerate();
   }
@@ -333,15 +378,33 @@ export class AppTableSetup extends LitElement {
   private _startExercise(): void {
     navigate('/timer', {
       table: this._editedTable,
-      type: this.mode,
+      type: this._mode,
     });
+  }
+
+  private _renderModeTabs() {
+    // Only show tabs when accessed via /training (no fixed mode prop)
+    if (this.mode) return '';
+    return html`
+      <div class="tabs" style="margin-bottom:var(--spacing-lg)">
+        <button
+          class="tab-btn ${this._mode === 'co2' ? 'active co2' : ''}"
+          @click=${() => this._switchMode('co2')}
+        >CO2</button>
+        <button
+          class="tab-btn ${this._mode === 'o2' ? 'active o2' : ''}"
+          @click=${() => this._switchMode('o2')}
+        >O2</button>
+      </div>
+    `;
   }
 
   render() {
     if (this._pb <= 0) {
       return html`
         <div class="page">
-          <h1 class="page-title ${this.mode}">${msg(str`${this.mode.toUpperCase()} Table`)}</h1>
+          ${this._renderModeTabs()}
+          <h1 class="page-title ${this._mode}">${msg(str`${this._mode.toUpperCase()} Table`)}</h1>
           <div class="no-pb">
             <p>${msg('You need to set your Personal Best before generating tables.')}</p>
             <button class="btn btn-primary btn-large" @click=${() => navigate('/pb-test')}>
@@ -356,8 +419,9 @@ export class AppTableSetup extends LitElement {
 
     return html`
       <div class="page">
+        ${this._renderModeTabs()}
         <div class="page-header">
-          <h1 class="page-title ${this.mode}">${msg(str`${this.mode.toUpperCase()} Table`)}</h1>
+          <h1 class="page-title ${this._mode}">${msg(str`${this._mode.toUpperCase()} Table`)}</h1>
           <div style="display:flex;align-items:center;gap:var(--spacing-sm)">
             <button
               class="info-btn ${this._showTooltip ? 'active' : ''}"

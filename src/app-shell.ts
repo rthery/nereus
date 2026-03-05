@@ -8,7 +8,7 @@ import type { ThemePreference } from './types.js';
 import './components/app-nav.js';
 import './pwa-badge.js';
 
-type AppRoute = '/' | '/co2' | '/o2' | '/timer' | '/pb-test' | '/history' | '/settings';
+type AppRoute = '/' | '/co2' | '/o2' | '/training' | '/timer' | '/pb-test' | '/history' | '/competitions' | '/settings';
 
 @localized()
 @customElement('app-shell')
@@ -187,6 +187,12 @@ export class AppShell extends LitElement {
       case '/pb-test':
         import('./pages/app-pb-test.js');
         return html`<app-pb-test></app-pb-test>`;
+      case '/training':
+        import('./pages/app-table-setup.js');
+        return html`<app-table-setup></app-table-setup>`;
+      case '/competitions':
+        import('./pages/app-competitions.js');
+        return html`<app-competitions></app-competitions>`;
       case '/history':
         import('./pages/app-history.js');
         return html`<app-history></app-history>`;

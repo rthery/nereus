@@ -62,6 +62,22 @@ export const DEFAULT_SETTINGS: Settings = {
   safetyAcknowledged: false,
 };
 
+export type DisciplineKey = 'STA' | 'DYN' | 'DYNB' | 'DNF' | '8x50m' | '4x50m' | '2x50m';
+
+export interface DisciplineResult {
+  discipline: DisciplineKey;
+  value: number; // seconds for STA/8x50m/4x50m/2x50m; meters for DYN/DYNB/DNF
+  rank?: number; // optional finish position (1, 2, 3, ...)
+}
+
+export interface Competition {
+  id: string;
+  date: number; // timestamp (ms)
+  name: string;
+  location?: string; // city, country (optional)
+  results: DisciplineResult[];
+}
+
 export interface DifficultyPreset {
   holdFactor: number;
   decrement?: number;

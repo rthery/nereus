@@ -2,7 +2,9 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { localized, msg } from '@lit/localize';
 import { navigate } from '../navigation.js';
-import { iconHome, iconCloud, iconWind, iconBarChart2, iconSettings } from './icons.js';
+import { iconHome, iconBarChart2, iconSettings, iconTrophy } from './icons.js';
+
+const iconDumbbell = html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14"></path><path d="M18 5v14"></path><path d="M2 9h4"></path><path d="M2 15h4"></path><path d="M18 9h4"></path><path d="M18 15h4"></path><path d="M6 9h12"></path><path d="M6 15h12"></path></svg>`;
 
 @localized()
 @customElement('app-nav')
@@ -72,9 +74,13 @@ export class AppNav extends LitElement {
     }
 
     .label {
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 500;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 72px;
     }
 
     @media (min-width: 769px) {
@@ -117,18 +123,18 @@ export class AppNav extends LitElement {
           <span class="label">${msg('Home')}</span>
         </button>
         <button
-          class=${this._isActive('/co2') ? 'active' : ''}
-          @click=${() => this._nav('/co2')}
+          class=${this._isActive('/training') || this._isActive('/co2') || this._isActive('/o2') ? 'active' : ''}
+          @click=${() => this._nav('/training')}
         >
-          <span class="icon">${iconCloud}</span>
-          <span class="label">CO2</span>
+          <span class="icon">${iconDumbbell}</span>
+          <span class="label">${msg('Training')}</span>
         </button>
         <button
-          class=${this._isActive('/o2') ? 'active' : ''}
-          @click=${() => this._nav('/o2')}
+          class=${this._isActive('/competitions') ? 'active' : ''}
+          @click=${() => this._nav('/competitions')}
         >
-          <span class="icon">${iconWind}</span>
-          <span class="label">O2</span>
+          <span class="icon">${iconTrophy}</span>
+          <span class="label">${msg('Competitions')}</span>
         </button>
         <button
           class=${this._isActive('/history') ? 'active' : ''}

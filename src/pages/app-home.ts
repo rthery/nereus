@@ -2,17 +2,19 @@ import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { localized, msg } from '@lit/localize';
 import { sharedStyles } from '../styles/theme.js';
-import { getSettings, getSessions } from '../services/db.js';
+import { getSettings, getSessions, getCompetitions } from '../services/db.js';
 import { formatTime } from '../services/tables.js';
 import { navigate } from '../navigation.js';
 import { getLocale } from '../localization.js';
-import type { Session } from '../types.js';
+import { iconTrophy } from '../components/icons.js';
+import type { Session, Competition } from '../types.js';
 
 @localized()
 @customElement('app-home')
 export class AppHome extends LitElement {
   @state() private _pb = 0;
   @state() private _recentSessions: Session[] = [];
+  @state() private _recentCompetitions: Competition[] = [];
 
   static styles = [
     sharedStyles,
@@ -122,6 +124,11 @@ export class AppHome extends LitElement {
         border-left: 3px solid var(--color-accent);
       }
 
+      .action-card.competitions {
+        grid-column: 1 / -1;
+        border-left: 3px solid var(--color-accent);
+      }
+
       .action-title {
         font-size: var(--font-lg);
         font-weight: 700;
@@ -187,6 +194,51 @@ export class AppHome extends LitElement {
         color: var(--color-hold);
       }
 
+      .comp-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--spacing-md);
+        background: var(--color-bg-surface);
+        border-radius: var(--radius-sm);
+        margin-bottom: var(--spacing-sm);
+        border: 1px solid var(--color-border);
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .comp-item:hover { background: var(--color-bg-surface-hover); }
+
+      .comp-item-left {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        min-width: 0;
+      }
+
+      .comp-icon {
+        color: var(--color-accent);
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+      }
+
+      .comp-icon svg { width: 16px; height: 16px; }
+
+      .comp-name {
+        font-weight: 600;
+        font-size: var(--font-sm);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .comp-count {
+        font-size: var(--font-xs);
+        color: var(--color-text-muted);
+        white-space: nowrap;
+      }
+
       .empty-state {
         text-align: center;
         padding: var(--spacing-xl);
@@ -202,9 +254,14 @@ export class AppHome extends LitElement {
   }
 
   private async _load(): Promise<void> {
-    const settings = await getSettings();
+    const [settings, sessions, competitions] = await Promise.all([
+      getSettings(),
+      getSessions(5),
+      getCompetitions(3),
+    ]);
     this._pb = settings.personalBest;
-    this._recentSessions = await getSessions(5);
+    this._recentSessions = sessions;
+    this._recentCompetitions = competitions;
   }
 
   private _formatDate(ts: number): string {
@@ -237,11 +294,15 @@ export class AppHome extends LitElement {
         <div class="actions">
           <div class="action-card co2" @click=${() => navigate('/co2')}>
             <div class="action-title">${msg('CO2 Table')}</div>
-            <div class="action-desc">${msg('Build CO2 tolerance with decreasing rest intervals')}</div>
+            <div class="action-desc">${msg('Build hypercapnia tolerance with decreasing rest intervals')}</div>
           </div>
           <div class="action-card o2" @click=${() => navigate('/o2')}>
             <div class="action-title">${msg('O2 Table')}</div>
             <div class="action-desc">${msg('Train hypoxia resistance with increasing hold times')}</div>
+          </div>
+          <div class="action-card competitions" @click=${() => navigate('/competitions')}>
+            <div class="action-title">${msg('Competitions')}</div>
+            <div class="action-desc">${msg('Track your competition results and see your progress per discipline')}</div>
           </div>
           <div class="action-card pb" @click=${() => navigate('/pb-test')}>
             <div class="action-title">${msg('PB Test')}</div>
@@ -266,11 +327,28 @@ export class AppHome extends LitElement {
                 `,
               )}
             `
-          : html`
-              <div class="empty-state">
-                ${msg('No sessions yet. Start your first training!')}
-              </div>
-            `}
+          : ''}
+
+        ${this._recentCompetitions.length > 0
+          ? html`
+              <div class="recent-header">${msg('Recent Competitions')}</div>
+              ${this._recentCompetitions.map(
+                (c) => html`
+                  <div class="comp-item" @click=${() => navigate('/competitions')}>
+                    <div class="comp-item-left">
+                      <span class="comp-icon">${iconTrophy}</span>
+                      <span class="comp-name">${c.name}</span>
+                    </div>
+                    <span class="comp-count">${c.results.length} ${msg('disciplines')}</span>
+                  </div>
+                `,
+              )}
+            `
+          : ''}
+
+        ${this._recentSessions.length === 0 && this._recentCompetitions.length === 0
+          ? html`<div class="empty-state">${msg('No sessions yet. Start your first training!')}</div>`
+          : ''}
       </div>
     `;
   }

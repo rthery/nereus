@@ -1,28 +1,36 @@
 import { openDB, type IDBPDatabase } from 'idb';
-import { DEFAULT_SETTINGS, type Settings, type Session, type PBRecord } from '../types.js';
+import { DEFAULT_SETTINGS, type Settings, type Session, type PBRecord, type Competition } from '../types.js';
 
 const DB_NAME = 'nereus';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
 
 function getDB(): Promise<IDBPDatabase> {
   if (!dbPromise) {
     dbPromise = openDB(DB_NAME, DB_VERSION, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains('settings')) {
-          db.createObjectStore('settings');
+      upgrade(db, oldVersion) {
+        if (oldVersion < 1) {
+          if (!db.objectStoreNames.contains('settings')) {
+            db.createObjectStore('settings');
+          }
+          if (!db.objectStoreNames.contains('sessions')) {
+            const store = db.createObjectStore('sessions', { keyPath: 'id' });
+            store.createIndex('date', 'date');
+            store.createIndex('type', 'type');
+          }
+          if (!db.objectStoreNames.contains('pb-history')) {
+            const store = db.createObjectStore('pb-history', {
+              keyPath: 'date',
+            });
+            store.createIndex('date', 'date');
+          }
         }
-        if (!db.objectStoreNames.contains('sessions')) {
-          const store = db.createObjectStore('sessions', { keyPath: 'id' });
-          store.createIndex('date', 'date');
-          store.createIndex('type', 'type');
-        }
-        if (!db.objectStoreNames.contains('pb-history')) {
-          const store = db.createObjectStore('pb-history', {
-            keyPath: 'date',
-          });
-          store.createIndex('date', 'date');
+        if (oldVersion < 2) {
+          if (!db.objectStoreNames.contains('competitions')) {
+            const store = db.createObjectStore('competitions', { keyPath: 'id' });
+            store.createIndex('date', 'date');
+          }
         }
       },
     });
@@ -81,14 +89,37 @@ export async function getPBHistory(): Promise<PBRecord[]> {
   return all;
 }
 
+export async function deletePBRecord(date: number): Promise<void> {
+  const db = await getDB();
+  await db.delete('pb-history', date);
+}
+
+// Competitions
+export async function saveCompetition(competition: Competition): Promise<void> {
+  const db = await getDB();
+  await db.put('competitions', competition);
+}
+
+export async function getCompetitions(limit = 100): Promise<Competition[]> {
+  const db = await getDB();
+  const all = await db.getAllFromIndex('competitions', 'date');
+  return all.reverse().slice(0, limit);
+}
+
+export async function deleteCompetition(id: string): Promise<void> {
+  const db = await getDB();
+  await db.delete('competitions', id);
+}
+
 // Reset (for testing)
 export async function clearAllData(): Promise<void> {
   const db = await getDB();
-  const tx = db.transaction(['settings', 'sessions', 'pb-history'], 'readwrite');
+  const tx = db.transaction(['settings', 'sessions', 'pb-history', 'competitions'], 'readwrite');
   await Promise.all([
     tx.objectStore('settings').clear(),
     tx.objectStore('sessions').clear(),
     tx.objectStore('pb-history').clear(),
+    tx.objectStore('competitions').clear(),
     tx.done,
   ]);
 }

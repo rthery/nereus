@@ -4,7 +4,7 @@ import { localized, msg } from '@lit/localize';
 import { sharedStyles } from '../styles/theme.js';
 import { getSettings, getSessions } from '../services/db.js';
 import { formatTime } from '../services/tables.js';
-import { navigate } from '../app-shell.js';
+import { navigate } from '../navigation.js';
 import { getLocale } from '../localization.js';
 import type { Session } from '../types.js';
 

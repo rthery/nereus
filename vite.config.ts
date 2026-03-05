@@ -1,5 +1,28 @@
 import { VitePWA } from 'vite-plugin-pwa';
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config';
+import { execSync } from 'child_process';
+import path from 'path';
+import type { Plugin } from 'vite';
+
+function litLocalizePlugin(): Plugin {
+  return {
+    name: 'lit-localize',
+    configureServer(server) {
+      server.watcher.add(path.resolve('xliff'));
+      server.watcher.on('change', (file) => {
+        if (file.endsWith('.xlf')) {
+          console.log(`\n[lit-localize] ${path.basename(file)} changed, rebuilding locales...`);
+          try {
+            execSync('npx lit-localize build', { stdio: 'inherit' });
+            console.log('[lit-localize] Done.\n');
+          } catch {
+            console.error('[lit-localize] Build failed.\n');
+          }
+        }
+      });
+    },
+  };
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -8,7 +31,7 @@ export default defineConfig({
     environment: 'happy-dom',
     include: ['src/__tests__/**/*.test.ts'],
   },
-  plugins: [VitePWA({
+  plugins: [litLocalizePlugin(), VitePWA({
     registerType: 'prompt',
     injectRegister: false,
 

@@ -243,11 +243,9 @@ export class AppShell extends LitElement {
   }
 }
 
-export function navigate(path: string, data?: unknown): void {
-  window.dispatchEvent(
-    new CustomEvent('navigate', { detail: { path, data } }),
-  );
-}
+// Re-exported from navigation.ts to avoid importing app-shell in page/component
+// modules (which would create a circular dep and double-register custom elements).
+export { navigate } from './navigation.js';
 
 declare global {
   interface HTMLElementTagNameMap {

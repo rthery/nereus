@@ -38,7 +38,6 @@
 's2593d0c70a1c5074': `Son`,
 's2ceb11be2290bb1b': `Annuler`,
 's2e3ab4cc7418679c': `difficile`,
-'s307a9c8dda7239d8': `Apnée maximale estimée (secondes)`,
 's30909445030b7904': `Pour renforcer la résistance à l'hypoxie avec des temps d'apnée croissants`,
 's337a1e9022a8d19f': `Table`,
 's338f2c7d3b678a68': `Veuillez d'abord configurer une table.`,
@@ -84,7 +83,7 @@
 's985fdb03c7415180': `Table O2`,
 's9a0a018f0c24ae15': str`Table ${0}`,
 's9a83d6a531aefd04': `Utilisé pour générer les tables d'entraînement`,
-'s9d3f6b15516ca8b2': `Retester le PB`,
+'s9d3f6b15516ca8b2': `Retester`,
 's9d8b8aa2b404c2c8': `Paramètres`,
 's9f18785bb510e9f0': `Retour haptique sur mobile`,
 'sa05472aae0beb1e8': `Bips lors des changements de phase`,
@@ -128,5 +127,10 @@
 'sf5b5feed86cd1489': `Temps d'apnée constant avec récupération décroissante. Développe la tolérance au CO2 en empêchant la récupération complète entre les apnées.`,
 'sf94437cd8a894d66': `Respiration`,
 'sfdf02bd238aa101e': `Aucun record personnel enregistré. Un test de PB permet de commencer.`,
+'s342df107c94feb74': `Estimated max hold`,
+'s07f4431917564077': `min`,
+'s823b7c195ce1fb72': `sec`,
+'sb85774dc5d18ff0f': `Confirm`,
+'s1c3313354e92481b': `Adjust time`,
     };
   

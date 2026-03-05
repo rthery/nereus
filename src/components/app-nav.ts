@@ -1,8 +1,8 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { localized, msg } from '@lit/localize';
-import { navigate } from '../app-shell.js';
-import { iconHome, iconArrowDown, iconArrowUp, iconBarChart2, iconSettings } from './icons.js';
+import { navigate } from '../navigation.js';
+import { iconHome, iconCloud, iconWind, iconBarChart2, iconSettings } from './icons.js';
 
 @localized()
 @customElement('app-nav')
@@ -120,14 +120,14 @@ export class AppNav extends LitElement {
           class=${this._isActive('/co2') ? 'active' : ''}
           @click=${() => this._nav('/co2')}
         >
-          <span class="icon">${iconArrowDown}</span>
+          <span class="icon">${iconCloud}</span>
           <span class="label">CO2</span>
         </button>
         <button
           class=${this._isActive('/o2') ? 'active' : ''}
           @click=${() => this._nav('/o2')}
         >
-          <span class="icon">${iconArrowUp}</span>
+          <span class="icon">${iconWind}</span>
           <span class="label">O2</span>
         </button>
         <button

@@ -10,7 +10,7 @@ import {
   formatTime,
   totalDuration,
 } from '../services/tables.js';
-import { navigate } from '../app-shell.js';
+import { navigate } from '../navigation.js';
 import type { TableRound, Difficulty, TableType, RoundCount } from '../types.js';
 
 @localized()

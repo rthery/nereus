@@ -4,7 +4,7 @@ import { localized, msg } from '@lit/localize';
 import { setLocale, detectLocale } from '../localization.js';
 import { sharedStyles } from '../styles/theme.js';
 import { getSettings, saveSettings, savePB } from '../services/db.js';
-import { formatTime, parseTime } from '../services/tables.js';
+import { formatTime } from '../services/tables.js';
 import type { ThemePreference, LocalePreference } from '../types.js';
 
 @localized()
@@ -17,7 +17,6 @@ export class AppSettings extends LitElement {
   @state() private _locale: LocalePreference = 'auto';
   @state() private _pb = 0;
   @state() private _editingPb = false;
-  @state() private _pbInput = '';
 
   static styles = [
     sharedStyles,
@@ -152,21 +151,60 @@ export class AppSettings extends LitElement {
         font-family: inherit;
       }
 
-      .pb-input {
+      .time-picker {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
         background: var(--color-bg-primary);
         border: 1px solid var(--color-accent);
         border-radius: var(--radius-sm);
         padding: var(--spacing-xs) var(--spacing-sm);
+      }
+
+      .time-picker-field {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+      }
+
+      .time-picker-field input {
+        background: transparent;
+        border: none;
         color: var(--color-text-primary);
         font-size: var(--font-md);
         font-weight: 600;
         text-align: center;
-        width: 80px;
         font-family: inherit;
+        font-variant-numeric: tabular-nums;
+        width: 3ch;
+        padding: 0;
+        -moz-appearance: textfield;
       }
 
-      .pb-input:focus {
+      .time-picker-field input:focus {
         outline: none;
+      }
+
+      .time-picker-field input::-webkit-outer-spin-button,
+      .time-picker-field input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      .time-picker-unit {
+        font-size: 10px;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .time-picker-sep {
+        font-size: var(--font-md);
+        font-weight: 700;
+        color: var(--color-text-secondary);
+        padding-bottom: 1.25em;
+        flex-shrink: 0;
       }
 
       .save-btn {
@@ -226,16 +264,14 @@ export class AppSettings extends LitElement {
   }
 
   private _startEditPb(): void {
+    if (this._pb <= 0) this._pb = 120; // default 2:00 when not yet set
     this._editingPb = true;
-    this._pbInput = this._pb > 0 ? formatTime(this._pb) : '2:00';
   }
 
   private async _savePb(): Promise<void> {
-    const seconds = parseTime(this._pbInput);
-    if (seconds > 0) {
-      this._pb = seconds;
-      await saveSettings({ personalBest: seconds });
-      await savePB({ date: Date.now(), value: seconds, source: 'manual' });
+    if (this._pb > 0) {
+      await saveSettings({ personalBest: this._pb });
+      await savePB({ date: Date.now(), value: this._pb, source: 'manual' });
     }
     this._editingPb = false;
   }
@@ -255,18 +291,37 @@ export class AppSettings extends LitElement {
             ${this._editingPb
               ? html`
                   <div class="pb-display">
-                    <input
-                      class="pb-input"
-                      type="text"
-                      inputmode="numeric"
-                      .value=${this._pbInput}
-                      @input=${(e: Event) => {
-                        this._pbInput = (e.target as HTMLInputElement).value;
-                      }}
-                      @keydown=${(e: KeyboardEvent) => {
-                        if (e.key === 'Enter') this._savePb();
-                      }}
-                    />
+                    <div class="time-picker">
+                      <div class="time-picker-field">
+                        <input
+                          type="number"
+                          inputmode="numeric"
+                          min="0"
+                          max="10"
+                          .value=${String(Math.floor(this._pb / 60))}
+                          @change=${(e: Event) => {
+                            const mins = Math.max(0, Math.min(10, parseInt((e.target as HTMLInputElement).value, 10) || 0));
+                            this._pb = Math.max(1, Math.min(600, mins * 60 + (this._pb % 60)));
+                          }}
+                        />
+                        <span class="time-picker-unit">${msg('min')}</span>
+                      </div>
+                      <div class="time-picker-sep">:</div>
+                      <div class="time-picker-field">
+                        <input
+                          type="number"
+                          inputmode="numeric"
+                          min="0"
+                          max="59"
+                          .value=${String(this._pb % 60).padStart(2, '0')}
+                          @change=${(e: Event) => {
+                            const secs = Math.max(0, Math.min(59, parseInt((e.target as HTMLInputElement).value, 10) || 0));
+                            this._pb = Math.max(1, Math.min(600, Math.floor(this._pb / 60) * 60 + secs));
+                          }}
+                        />
+                        <span class="time-picker-unit">${msg('sec')}</span>
+                      </div>
+                    </div>
                     <button class="save-btn" @click=${this._savePb}>${msg('Save')}</button>
                   </div>
                 `

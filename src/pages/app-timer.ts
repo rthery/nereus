@@ -17,7 +17,7 @@ import {
   vibrateComplete,
 } from '../services/vibration.js';
 import { formatTime } from '../services/tables.js';
-import { navigate } from '../app-shell.js';
+import { navigate } from '../navigation.js';
 import { iconCheckCircle, iconAlertTriangle, iconX } from '../components/icons.js';
 import type { TableRound, Phase, TimerState, TableType } from '../types.js';
 

@@ -11,7 +11,7 @@ import {
   ensureAudioContext,
 } from '../services/audio.js';
 import { vibratePhaseChange, vibrateComplete } from '../services/vibration.js';
-import { navigate } from '../app-shell.js';
+import { navigate } from '../navigation.js';
 
 type Step = 'intro' | 'relaxation' | 'warmup' | 'rest-before-max' | 'max-hold' | 'result';
 
@@ -29,6 +29,7 @@ export class AppPbTest extends LitElement {
   @state() private _remaining = 0;
   @state() private _running = false;
   @state() private _newPb = 0;
+  @state() private _editingResult = false;
   @state() private _soundEnabled = true;
   @state() private _vibrationEnabled = true;
 
@@ -67,13 +68,13 @@ export class AppPbTest extends LitElement {
       p {
         color: var(--color-text-secondary);
         line-height: 1.6;
-        margin-bottom: var(--spacing-md);
+        margin-bottom: var(--spacing-sm);
       }
 
       .step-indicator {
         display: flex;
         gap: var(--spacing-xs);
-        margin-bottom: var(--spacing-xl);
+        margin-bottom: var(--spacing-md);
       }
 
       .step-dot {
@@ -121,14 +122,14 @@ export class AppPbTest extends LitElement {
         gap: var(--spacing-md);
         width: 100%;
         max-width: 300px;
-        margin-top: var(--spacing-lg);
+        margin-top: var(--spacing-md);
       }
 
       .estimate-input {
         display: flex;
         flex-direction: column;
         gap: var(--spacing-sm);
-        margin: var(--spacing-lg) 0;
+        margin: var(--spacing-sm) 0;
         width: 100%;
         max-width: 300px;
       }
@@ -138,22 +139,81 @@ export class AppPbTest extends LitElement {
         color: var(--color-text-secondary);
       }
 
-      .estimate-input input {
+      .time-picker {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
         background: var(--color-bg-surface);
         border: 1px solid var(--color-border);
         border-radius: var(--radius-md);
-        padding: var(--spacing-md);
+        padding: var(--spacing-sm) var(--spacing-md);
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      .time-picker:focus-within {
+        border-color: var(--color-accent);
+      }
+
+      .time-picker-field {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        flex: 1;
+      }
+
+      .time-picker-field input {
+        background: transparent;
+        border: none;
         color: var(--color-text-primary);
-        font-size: var(--font-xl);
+        font-size: var(--font-lg);
         font-weight: 700;
         text-align: center;
         font-family: inherit;
         font-variant-numeric: tabular-nums;
+        width: 100%;
+        padding: 0;
+        -moz-appearance: textfield;
       }
 
-      .estimate-input input:focus {
+      .time-picker-field input:focus {
         outline: none;
-        border-color: var(--color-accent);
+      }
+
+      .time-picker-field input::-webkit-outer-spin-button,
+      .time-picker-field input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      .time-picker-unit {
+        font-size: var(--font-xs);
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .time-picker-sep {
+        font-size: var(--font-lg);
+        font-weight: 700;
+        color: var(--color-text-secondary);
+        padding-bottom: 1.4em;
+        flex-shrink: 0;
+      }
+
+      .pb-edit-btn {
+        background: none;
+        border: none;
+        color: var(--color-text-muted);
+        cursor: pointer;
+        font-size: var(--font-sm);
+        font-family: inherit;
+        text-decoration: underline;
+        padding: var(--spacing-xs) 0;
+        margin-top: var(--spacing-xs);
+        display: block;
       }
 
       .result-card {
@@ -378,20 +438,40 @@ export class AppPbTest extends LitElement {
             3. Final maximum breath hold`)}
           </p>
           <div class="estimate-input">
-            <label>${msg('Estimated max hold (seconds)')}</label>
-            <input
-              type="number"
-              inputmode="numeric"
-              min="30"
-              max="600"
-              .value=${String(this._estimatedMax)}
-              @input=${(e: Event) => {
-                this._estimatedMax = parseInt((e.target as HTMLInputElement).value, 10) || 120;
-              }}
-            />
-            <span style="font-size: var(--font-sm); color: var(--color-text-muted)">
-              = ${formatTime(this._estimatedMax)}
-            </span>
+            <label>${msg('Estimated max hold')}</label>
+            <div class="time-picker">
+              <div class="time-picker-field">
+                <input
+                  type="number"
+                  inputmode="numeric"
+                  min="0"
+                  max="10"
+                  .value=${String(Math.floor(this._estimatedMax / 60))}
+                  @change=${(e: Event) => {
+                    const mins = Math.max(0, Math.min(10, parseInt((e.target as HTMLInputElement).value, 10) || 0));
+                    const secs = this._estimatedMax % 60;
+                    this._estimatedMax = Math.max(30, Math.min(600, mins * 60 + secs));
+                  }}
+                />
+                <span class="time-picker-unit">${msg('min')}</span>
+              </div>
+              <div class="time-picker-sep">:</div>
+              <div class="time-picker-field">
+                <input
+                  type="number"
+                  inputmode="numeric"
+                  min="0"
+                  max="59"
+                  .value=${String(this._estimatedMax % 60).padStart(2, '0')}
+                  @change=${(e: Event) => {
+                    const secs = Math.max(0, Math.min(59, parseInt((e.target as HTMLInputElement).value, 10) || 0));
+                    const mins = Math.floor(this._estimatedMax / 60);
+                    this._estimatedMax = Math.max(30, Math.min(600, mins * 60 + secs));
+                  }}
+                />
+                <span class="time-picker-unit">${msg('sec')}</span>
+              </div>
+            </div>
           </div>
           <div class="actions">
             <button class="btn btn-primary btn-large" @click=${this._goToRelaxation}>
@@ -481,14 +561,58 @@ export class AppPbTest extends LitElement {
           </div>
         `;
 
-      case 'result':
+      case 'result': {
         const improvement = this._oldPb > 0 ? this._newPb - this._oldPb : 0;
 
         return html`
           <h2>${msg('Result')}</h2>
           <div class="result-card">
             <div class="timer-label">${msg('Your Personal Best')}</div>
-            <div class="result-pb">${this._formatTime(this._newPb)}</div>
+            ${this._editingResult
+              ? html`
+                  <div class="estimate-input" style="margin: var(--spacing-md) 0 var(--spacing-xs);">
+                    <div class="time-picker">
+                      <div class="time-picker-field">
+                        <input
+                          type="number"
+                          inputmode="numeric"
+                          min="0"
+                          max="20"
+                          .value=${String(Math.floor(this._newPb / 60))}
+                          @change=${(e: Event) => {
+                            const mins = Math.max(0, Math.min(20, parseInt((e.target as HTMLInputElement).value, 10) || 0));
+                            this._newPb = Math.max(1, mins * 60 + (this._newPb % 60));
+                          }}
+                        />
+                        <span class="time-picker-unit">${msg('min')}</span>
+                      </div>
+                      <div class="time-picker-sep">:</div>
+                      <div class="time-picker-field">
+                        <input
+                          type="number"
+                          inputmode="numeric"
+                          min="0"
+                          max="59"
+                          .value=${String(this._newPb % 60).padStart(2, '0')}
+                          @change=${(e: Event) => {
+                            const secs = Math.max(0, Math.min(59, parseInt((e.target as HTMLInputElement).value, 10) || 0));
+                            this._newPb = Math.max(1, Math.floor(this._newPb / 60) * 60 + secs);
+                          }}
+                        />
+                        <span class="time-picker-unit">${msg('sec')}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button class="pb-edit-btn" @click=${() => { this._editingResult = false; }}>
+                    ${msg('Confirm')}
+                  </button>
+                `
+              : html`
+                  <div class="result-pb">${this._formatTime(this._newPb)}</div>
+                  <button class="pb-edit-btn" @click=${() => { this._editingResult = true; }}>
+                    ${msg('Adjust time')}
+                  </button>
+                `}
             ${this._oldPb > 0
               ? html`
                   <div class="result-comparison">
@@ -511,6 +635,7 @@ export class AppPbTest extends LitElement {
             </button>
           </div>
         `;
+      }
     }
   }
 

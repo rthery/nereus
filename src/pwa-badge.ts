@@ -118,28 +118,41 @@ export class PwaBadge extends LitElement {
         visibility: hidden;
         position: fixed;
         right: 0;
-        bottom: 0;
+        bottom: 80px;
         margin: 16px;
-        padding: 12px;
-        border: 1px solid #8885;
-        border-radius: 4px;
-        z-index: 1;
+        padding: 12px 16px;
+        border: 1px solid var(--color-border, rgba(139, 159, 194, 0.15));
+        border-radius: 12px;
+        z-index: 200;
         text-align: left;
-        box-shadow: 3px 4px 5px 0 #8885;
+        background: var(--color-bg-surface, #162340);
+        color: var(--color-text-primary, #e8edf5);
+        box-shadow: 0 4px 12px var(--color-shadow, rgba(0, 0, 0, 0.3));
         display: grid;
+        font-size: 14px;
     }
     #pwa-toast .message {
         margin-bottom: 8px;
     }
     #pwa-toast .buttons {
         display: flex;
+        gap: 8px;
     }
     #pwa-toast button {
-        border: 1px solid #8885;
+        border: 1px solid var(--color-border, rgba(139, 159, 194, 0.15));
         outline: none;
-        margin-right: 5px;
-        border-radius: 2px;
-        padding: 3px 10px;
+        border-radius: 999px;
+        padding: 4px 14px;
+        background: var(--color-bg-surface-hover, #1c2d52);
+        color: var(--color-text-primary, #e8edf5);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    #pwa-toast button#pwa-refresh {
+        background: var(--color-accent, #22b8cf);
+        color: #fff;
+        border-color: var(--color-accent, #22b8cf);
     }
     #pwa-toast.show {
         visibility: visible;

@@ -3,6 +3,10 @@ import { defineConfig } from 'vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  test: {
+    environment: 'happy-dom',
+    include: ['src/__tests__/**/*.test.ts'],
+  },
   plugins: [VitePWA({
     registerType: 'prompt',
     injectRegister: false,
@@ -15,8 +19,9 @@ export default defineConfig({
     manifest: {
       name: 'Nereus',
       short_name: 'Nereus',
-      description: 'Freediving app',
-      theme_color: '#ffffff',
+      description: 'Freediving breath-hold training with CO2 and O2 tables',
+      theme_color: '#0a1628',
+      background_color: '#0a1628',
     },
 
     workbox: {

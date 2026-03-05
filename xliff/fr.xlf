@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+<file target-language="fr" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="s8b36bf8e360dc951">
+  <source>Safety Notice</source>
+  <target>Avis de s&#233;curit&#233;</target>
+</trans-unit>
+<trans-unit id="hed296358d43bfc35">
+  <source>Breath-hold training carries inherent risks. Before using this app, please
+                  be aware of the following:</source>
+  <target>L'entra&#238;nement en apn&#233;e comporte des risques inh&#233;rents. Avant d'utiliser cette application, veuillez prendre connaissance des points suivants :</target>
+</trans-unit>
+<trans-unit id="hf16a61279a336cea">
+  <source><x id="0" equiv-text="&lt;strong&gt;"/>Never train in water alone<x id="1" equiv-text="&lt;/strong&gt;"/> - dry (on land) training is recommended for solo practice</source>
+  <target><x id="0" equiv-text="&lt;strong&gt;"/>Ne vous entra&#238;nez jamais dans l'eau seul(e)<x id="1" equiv-text="&lt;/strong&gt;"/> - l'entra&#238;nement &#224; sec est recommand&#233; pour la pratique en solo</target>
+</trans-unit>
+<trans-unit id="h6470f74dceda4fd1">
+  <source><x id="0" equiv-text="&lt;strong&gt;"/>Never hyperventilate<x id="1" equiv-text="&lt;/strong&gt;"/> before breath holds</source>
+  <target><x id="0" equiv-text="&lt;strong&gt;"/>Ne faites jamais d'hyperventilation<x id="1" equiv-text="&lt;/strong&gt;"/> avant les apn&#233;es</target>
+</trans-unit>
+<trans-unit id="h3012a826f30d777c">
+  <source><x id="0" equiv-text="&lt;strong&gt;"/>Stop immediately<x id="1" equiv-text="&lt;/strong&gt;"/> if you feel dizzy, see spots, or experience strong involuntary contractions</source>
+  <target><x id="0" equiv-text="&lt;strong&gt;"/>Arr&#234;tez imm&#233;diatement<x id="1" equiv-text="&lt;/strong&gt;"/> si vous ressentez des vertiges, voyez des points lumineux ou &#233;prouvez de fortes contractions involontaires</target>
+</trans-unit>
+<trans-unit id="h44d18e9784943915">
+  <source><x id="0" equiv-text="&lt;strong&gt;"/>Do not train<x id="1" equiv-text="&lt;/strong&gt;"/> if fatigued, ill, or after consuming alcohol</source>
+  <target><x id="0" equiv-text="&lt;strong&gt;"/>Ne vous entra&#238;nez pas<x id="1" equiv-text="&lt;/strong&gt;"/> si vous &#234;tes fatigu&#233;(e), malade ou apr&#232;s avoir consomm&#233; de l'alcool</target>
+</trans-unit>
+<trans-unit id="h9523acd95d3d7a06">
+  <source><x id="0" equiv-text="&lt;strong&gt;"/>Consult a doctor<x id="1" equiv-text="&lt;/strong&gt;"/> if you have cardiovascular, respiratory, or neurological conditions</source>
+  <target><x id="0" equiv-text="&lt;strong&gt;"/>Consultez un m&#233;decin<x id="1" equiv-text="&lt;/strong&gt;"/> si vous souffrez de troubles cardiovasculaires, respiratoires ou neurologiques</target>
+</trans-unit>
+<trans-unit id="s57efecd546de5452">
+  <source>This app is designed for dry (land-based) static apnea training only.</source>
+  <target>Cette application est con&#231;ue uniquement pour l'entra&#238;nement en apn&#233;e statique &#224; sec.</target>
+</trans-unit>
+<trans-unit id="s398d2bf04fd254e5">
+  <source>I understand and accept</source>
+  <target>Je comprends et j'accepte</target>
+</trans-unit>
+<trans-unit id="s6abb1cd87fe0114e">
+  <source>Home</source>
+  <target>Accueil</target>
+</trans-unit>
+<trans-unit id="s58c754018ec47b5f">
+  <source>History</source>
+  <target>Historique</target>
+</trans-unit>
+<trans-unit id="s9d8b8aa2b404c2c8">
+  <source>Settings</source>
+  <target>Param&#232;tres</target>
+</trans-unit>
+<trans-unit id="sed8ec5e3c64fa25d">
+  <source>Total</source>
+  <target>Total</target>
+</trans-unit>
+<trans-unit id="s5c18cae48b93138c">
+  <source>Sessions</source>
+  <target>S&#233;ances</target>
+</trans-unit>
+<trans-unit id="sc4f2b3ccf7473356">
+  <source>PB Progress</source>
+  <target>Progression du Record personnel (PB)</target>
+</trans-unit>
+<trans-unit id="s7b07df3f72558b6b">
+  <source>No sessions recorded yet.</source>
+  <target>Aucune s&#233;ance enregistr&#233;e.</target>
+</trans-unit>
+<trans-unit id="s5033dab8c17f05f2">
+  <source>Completed</source>
+  <target>Termin&#233;</target>
+</trans-unit>
+<trans-unit id="sc5fcb9351a03ab2e">
+  <source>Stopped</source>
+  <target>Arr&#234;t&#233;</target>
+</trans-unit>
+<trans-unit id="s0994424332a62b74">
+  <source>PB Result</source>
+  <target>R&#233;sultat du PB</target>
+</trans-unit>
+<trans-unit id="sfdf02bd238aa101e">
+  <source>No PB records yet. Take a PB test to get started.</source>
+  <target>Aucun record personnel enregistr&#233;. Un test de PB permet de commencer.</target>
+</trans-unit>
+<trans-unit id="s5ffd7c4856a66b48">
+  <source>Freediving Breath-Hold Training</source>
+  <target>Entra&#238;nement d'apn&#233;e statique</target>
+</trans-unit>
+<trans-unit id="sd190523b76b66298">
+  <source>Not set yet</source>
+  <target>Non d&#233;fini</target>
+</trans-unit>
+<trans-unit id="s9d3f6b15516ca8b2">
+  <source>Retest PB</source>
+  <target>Retester le PB</target>
+</trans-unit>
+<trans-unit id="sac827cbd63d65937">
+  <source>CO2 Table</source>
+  <target>Table CO2</target>
+</trans-unit>
+<trans-unit id="sc371613641bcdca5">
+  <source>Build CO2 tolerance with decreasing rest intervals</source>
+  <target>Pour d&#233;velopper la tol&#233;rance au CO2 avec des temps de r&#233;cup&#233;ration d&#233;croissants</target>
+</trans-unit>
+<trans-unit id="s985fdb03c7415180">
+  <source>O2 Table</source>
+  <target>Table O2</target>
+</trans-unit>
+<trans-unit id="s30909445030b7904">
+  <source>Train hypoxia resistance with increasing hold times</source>
+  <target>Pour renforcer la r&#233;sistance &#224; l'hypoxie avec des temps d'apn&#233;e croissants</target>
+</trans-unit>
+<trans-unit id="sbccc8526ccdad3c5">
+  <source>Guided determination exercise to measure your max breath hold</source>
+  <target>Exercice guid&#233; pour mesurer le temps d'apn&#233;e maximum</target>
+</trans-unit>
+<trans-unit id="s447cd755737a25b7">
+  <source>Recent Sessions</source>
+  <target>S&#233;ances r&#233;centes</target>
+</trans-unit>
+<trans-unit id="s1c0a0ba9ca354f45">
+  <source>Incomplete</source>
+  <target>Incomplet</target>
+</trans-unit>
+<trans-unit id="sc4153d3a47b79357">
+  <source>No sessions yet. Start your first training!</source>
+  <target>Aucune s&#233;ance enregistr&#233;e. C'est le moment de commencer !</target>
+</trans-unit>
+<trans-unit id="sb52c11c237a86135">
+  <source>PB Test</source>
+  <target>Test de PB</target>
+</trans-unit>
+<trans-unit id="s0939e731bb3e9ec3">
+  <source>This guided test will determine your maximum breath-hold time. The result is used to generate your CO2 and O2 training tables.</source>
+  <target>Ce test guid&#233; d&#233;termine le temps d'apn&#233;e maximum et g&#233;n&#232;re les tables d'entra&#238;nement CO2 et O2.</target>
+</trans-unit>
+<trans-unit id="s490ec5961a702c61">
+  <source>The test consists of:</source>
+  <target>Le test comprend :</target>
+</trans-unit>
+<trans-unit id="h661d548e7aae9319">
+  <source>1. 2-minute relaxation phase<x id="0" equiv-text="&lt;br&gt;"/>
+            2. <x id="1" equiv-text="${WARMUP_COUNT}"/> warm-up holds at 50% estimated max<x id="2" equiv-text="&lt;br&gt;"/>
+            3. Final maximum breath hold</source>
+  <target>1. Phase de relaxation de 2 minutes<x id="0" equiv-text="&lt;br&gt;"/>
+            2. <x id="1" equiv-text="${WARMUP_COUNT}"/> apn&#233;es d'&#233;chauffement &#224; 50 % du maximum estim&#233;<x id="2" equiv-text="&lt;br&gt;"/>
+            3. Apn&#233;e maximale finale</target>
+</trans-unit>
+<trans-unit id="s307a9c8dda7239d8">
+  <source>Estimated max hold (seconds)</source>
+  <target>Apn&#233;e maximale estim&#233;e (secondes)</target>
+</trans-unit>
+<trans-unit id="s7f0064f8cb6cfd6d">
+  <source>Start Test</source>
+  <target>D&#233;marrer le test</target>
+</trans-unit>
+<trans-unit id="s727e9c24005f7372">
+  <source>Relax &amp; Breathe</source>
+  <target>Relaxation et Respiration</target>
+</trans-unit>
+<trans-unit id="sa94a4b5ee4ed7c1c">
+  <source>Breathe calmly and naturally. Focus on slowing your heart rate. Inhale for 4 seconds, exhale for 8 seconds.</source>
+  <target>Respirez calmement et naturellement. Concentrez-vous pour ralentir le rythme cardiaque. Inspirez pendant 4 secondes, expirez pendant 8 secondes.</target>
+</trans-unit>
+<trans-unit id="s7f43af9723747d1e">
+  <source>Relaxation</source>
+  <target>Relaxation</target>
+</trans-unit>
+<trans-unit id="s66413c24dcf680e2">
+  <source>Skip</source>
+  <target>Passer</target>
+</trans-unit>
+<trans-unit id="s8ff6febc0412562f">
+  <source>Warm-up Hold</source>
+  <target>Apn&#233;e d'&#233;chauffement</target>
+</trans-unit>
+<trans-unit id="sb2b44de8a70ae954">
+  <source><x id="0" equiv-text="${this._currentWarmup + 1}"/> of <x id="1" equiv-text="${WARMUP_COUNT}"/></source>
+  <target><x id="0" equiv-text="${this._currentWarmup + 1}"/> sur <x id="1" equiv-text="${WARMUP_COUNT}"/></target>
+</trans-unit>
+<trans-unit id="s73de702bbe422cb7">
+  <source>Rest</source>
+  <target>R&#233;cup&#233;ration</target>
+</trans-unit>
+<trans-unit id="sc1ea0b92625cd640">
+  <source>Breathe calmly...</source>
+  <target>Respirez calmement...</target>
+</trans-unit>
+<trans-unit id="sa897ede39c2ea594">
+  <source>Hold for ~<x id="0" equiv-text="${formatTime(Math.round(this._estimatedMax * 0.5))}"/>. Don't push hard, this is just a warm-up.</source>
+  <target>Apn&#233;e d'environ ~<x id="0" equiv-text="${formatTime(Math.round(this._estimatedMax * 0.5))}"/>. Ne forcez pas, c'est juste un &#233;chauffement.</target>
+</trans-unit>
+<trans-unit id="s6595c451b8af8170">
+  <source>Start Hold</source>
+  <target>D&#233;but de l'apn&#233;e</target>
+</trans-unit>
+<trans-unit id="s746f4f8c92f534bf">
+  <source>End Hold</source>
+  <target>Fin de l'apn&#233;e</target>
+</trans-unit>
+<trans-unit id="sebf14614361b118a">
+  <source>Final Preparation</source>
+  <target>Pr&#233;paration finale</target>
+</trans-unit>
+<trans-unit id="s0f1bc24defc47fc0">
+  <source>Breathe calmly for 2 minutes. Prepare for your maximum effort. Take a deep breath when ready.</source>
+  <target>Respirez calmement pendant 2 minutes. Pr&#233;parez-vous pour l'effort maximum. Inspirez profond&#233;ment lorsque pr&#234;t(e).</target>
+</trans-unit>
+<trans-unit id="s4027a1984cfbc223">
+  <source>I'm Ready</source>
+  <target>Je suis pr&#234;t(e)</target>
+</trans-unit>
+<trans-unit id="sc533559a98f7b5c2">
+  <source>Maximum Hold</source>
+  <target>Apn&#233;e maximale</target>
+</trans-unit>
+<trans-unit id="s7dfaa1402aa371b3">
+  <source>Hold as long as you comfortably can.</source>
+  <target>Tenez aussi longtemps que vous le pouvez confortablement.</target>
+</trans-unit>
+<trans-unit id="s123599b6570bb99b">
+  <source>Elapsed</source>
+  <target>Temps &#233;coul&#233;</target>
+</trans-unit>
+<trans-unit id="sed9e94ff8bcba7d3">
+  <source>Stop - I'm Done</source>
+  <target>Arr&#234;ter - J'ai fini</target>
+</trans-unit>
+<trans-unit id="s890e983a7be64da4">
+  <source>Result</source>
+  <target>R&#233;sultat</target>
+</trans-unit>
+<trans-unit id="s6569bd5a6c4fa208">
+  <source>Your Personal Best</source>
+  <target>Record personnel (PB)</target>
+</trans-unit>
+<trans-unit id="sc85aeb4cf544e054">
+  <source>Previous: <x id="0" equiv-text="${formatTime(this._oldPb)}"/></source>
+  <target>Pr&#233;c&#233;dent : <x id="0" equiv-text="${formatTime(this._oldPb)}"/></target>
+</trans-unit>
+<trans-unit id="s12351417fb544e3d">
+  <source>+<x id="0" equiv-text="${improvement}"/>s</source>
+  <target>+<x id="0" equiv-text="${improvement}"/>s</target>
+</trans-unit>
+<trans-unit id="s087d3d07b52adbf6">
+  <source><x id="0" equiv-text="${improvement}"/>s</source>
+  <target><x id="0" equiv-text="${improvement}"/>s</target>
+</trans-unit>
+<trans-unit id="s3446d92f07213366">
+  <source> (same)</source>
+  <target> (identique)</target>
+</trans-unit>
+<trans-unit id="s1257cd35e26de107">
+  <source>Save &amp; Continue</source>
+  <target>Enregistrer et continuer</target>
+</trans-unit>
+<trans-unit id="sc00a88b90cd60661">
+  <source>Discard</source>
+  <target>Abandonner</target>
+</trans-unit>
+<trans-unit id="s455fcc753ee64e99">
+  <source>Personal Best</source>
+  <target>Record personnel (PB)</target>
+</trans-unit>
+<trans-unit id="s454e5aba826b50c8">
+  <source>Current PB</source>
+  <target>PB actuel</target>
+</trans-unit>
+<trans-unit id="s9a83d6a531aefd04">
+  <source>Used to generate your training tables</source>
+  <target>Utilis&#233; pour g&#233;n&#233;rer les tables d'entra&#238;nement</target>
+</trans-unit>
+<trans-unit id="s33f85f24c0f5f008">
+  <source>Save</source>
+  <target>Enregistrer</target>
+</trans-unit>
+<trans-unit id="s0df0e8c4f3c2eba6">
+  <source>Not set</source>
+  <target>Non d&#233;fini</target>
+</trans-unit>
+<trans-unit id="s64ef2a6c2dd1d3d1">
+  <source>Edit</source>
+  <target>Modifier</target>
+</trans-unit>
+<trans-unit id="sf0e261e04eda82ff">
+  <source>Appearance</source>
+  <target>Apparence</target>
+</trans-unit>
+<trans-unit id="saab875d8cfcfe712">
+  <source>Theme</source>
+  <target>Th&#232;me</target>
+</trans-unit>
+<trans-unit id="sbfb559c71c56b4fc">
+  <source>system</source>
+  <target>syst&#232;me</target>
+</trans-unit>
+<trans-unit id="s1f71d5a9cecc1b0f">
+  <source>light</source>
+  <target>clair</target>
+</trans-unit>
+<trans-unit id="s85615b6730a7bfe5">
+  <source>dark</source>
+  <target>sombre</target>
+</trans-unit>
+<trans-unit id="sefcf950b3cc4fc3b">
+  <source>Language</source>
+  <target>Langue</target>
+</trans-unit>
+<trans-unit id="sbb588bb505779122">
+  <source>Feedback</source>
+  <target>Retour sensoriel</target>
+</trans-unit>
+<trans-unit id="s2593d0c70a1c5074">
+  <source>Sound</source>
+  <target>Son</target>
+</trans-unit>
+<trans-unit id="sa05472aae0beb1e8">
+  <source>Beeps during phase transitions</source>
+  <target>Bips lors des changements de phase</target>
+</trans-unit>
+<trans-unit id="s598c7839e7feb2c9">
+  <source>Vibration</source>
+  <target>Vibration</target>
+</trans-unit>
+<trans-unit id="s9f18785bb510e9f0">
+  <source>Haptic feedback on mobile</source>
+  <target>Retour haptique sur mobile</target>
+</trans-unit>
+<trans-unit id="s9a0a018f0c24ae15">
+  <source><x id="0" equiv-text="${this.mode.toUpperCase()}"/> Table</source>
+  <target>Table <x id="0" equiv-text="${this.mode.toUpperCase()}"/></target>
+</trans-unit>
+<trans-unit id="sa2e4b9f3f7aedc5a">
+  <source>You need to set your Personal Best before generating tables.</source>
+  <target>Le Record personnel (PB) doit &#234;tre d&#233;fini avant de g&#233;n&#233;rer les tables.</target>
+</trans-unit>
+<trans-unit id="sb205d901772ae0d0">
+  <source>Take PB Test</source>
+  <target>Faire le test de PB</target>
+</trans-unit>
+<trans-unit id="s5ae6bafa7fb5f771">
+  <source>PB: <x id="0" equiv-text="${formatTime(this._pb)}"/></source>
+  <target>PB : <x id="0" equiv-text="${formatTime(this._pb)}"/></target>
+</trans-unit>
+<trans-unit id="sf5b5feed86cd1489">
+  <source>Constant hold time with decreasing rest. Builds CO2 tolerance by preventing full recovery between holds.</source>
+  <target>Temps d'apn&#233;e constant avec r&#233;cup&#233;ration d&#233;croissante. D&#233;veloppe la tol&#233;rance au CO2 en emp&#234;chant la r&#233;cup&#233;ration compl&#232;te entre les apn&#233;es.</target>
+</trans-unit>
+<trans-unit id="se8b06713344d24ad">
+  <source>Increasing hold time with constant rest. Trains your body to function with progressively lower oxygen levels.</source>
+  <target>Temps d'apn&#233;e croissant avec r&#233;cup&#233;ration constante. Entra&#238;ne le corps &#224; fonctionner avec des niveaux d'oxyg&#232;ne progressivement plus bas.</target>
+</trans-unit>
+<trans-unit id="sc43eabc5a66b8450">
+  <source>Difficulty</source>
+  <target>Difficult&#233;</target>
+</trans-unit>
+<trans-unit id="s21159d601e3fd4bb">
+  <source>easy</source>
+  <target>facile</target>
+</trans-unit>
+<trans-unit id="s61053f0e3ebbd272">
+  <source>normal</source>
+  <target>normal</target>
+</trans-unit>
+<trans-unit id="s2e3ab4cc7418679c">
+  <source>hard</source>
+  <target>difficile</target>
+</trans-unit>
+<trans-unit id="saf7472b8f6ac1a98">
+  <source>Rounds</source>
+  <target>Cycles</target>
+</trans-unit>
+<trans-unit id="s3ece49ff2e9eb0ab">
+  <source>Quick (4)</source>
+  <target>Rapide (4)</target>
+</trans-unit>
+<trans-unit id="s3af52ee108d901b7">
+  <source>Full (8)</source>
+  <target>Complet (8)</target>
+</trans-unit>
+<trans-unit id="sf0cab2483f66aa2e">
+  <source>Custom</source>
+  <target>Personnalis&#233;</target>
+</trans-unit>
+<trans-unit id="sf94437cd8a894d66">
+  <source>Breathe</source>
+  <target>Respiration</target>
+</trans-unit>
+<trans-unit id="s6ab6f7d87fdbe998">
+  <source>Hold</source>
+  <target>Apn&#233;e</target>
+</trans-unit>
+<trans-unit id="sbf09a5e18ba2bb33">
+  <source>Total Duration</source>
+  <target>Dur&#233;e totale</target>
+</trans-unit>
+<trans-unit id="s255857544a9d5ec0">
+  <source>Reset</source>
+  <target>R&#233;initialiser</target>
+</trans-unit>
+<trans-unit id="sc81939bfebc2dd03">
+  <source>Start Exercise</source>
+  <target>D&#233;marrer l'exercice</target>
+</trans-unit>
+<trans-unit id="sf3effee1d21b7746">
+  <source>No table data</source>
+  <target>Aucune donn&#233;e de table</target>
+</trans-unit>
+<trans-unit id="s338f2c7d3b678a68">
+  <source>Please configure a table first.</source>
+  <target>Veuillez d'abord configurer une table.</target>
+</trans-unit>
+<trans-unit id="se3454698f4fd9f92">
+  <source>Go Home</source>
+  <target>Retour &#224; l'accueil</target>
+</trans-unit>
+<trans-unit id="sa2e99e63719dbfc9">
+  <source><x id="0" equiv-text="${this.tableData.type.toUpperCase()}"/> Table Exercise</source>
+  <target>Exercice de table <x id="0" equiv-text="${this.tableData.type.toUpperCase()}"/></target>
+</trans-unit>
+<trans-unit id="s945ef03fd4f0b569">
+  <source><x id="0" equiv-text="${this.tableData.table.length}"/> rounds. Total time: ~<x id="1" equiv-text="${formatTime(this.tableData.table.reduce((s, r) =&gt; s + r.rest + r.hold, 0))}"/>.</source>
+  <target><x id="0" equiv-text="${this.tableData.table.length}"/> cycles. Dur&#233;e totale : ~<x id="1" equiv-text="${formatTime(this.tableData.table.reduce((s, r) =&gt; s + r.rest + r.hold, 0))}"/>.</target>
+</trans-unit>
+<trans-unit id="s15a89e25a33726c4">
+  <source>Find a comfortable position. Relax and breathe naturally.</source>
+  <target>Trouvez une position confortable. D&#233;tendez-vous et respirez naturellement.</target>
+</trans-unit>
+<trans-unit id="s5a4474c4d888063e">
+  <source>Begin</source>
+  <target>Commencer</target>
+</trans-unit>
+<trans-unit id="s2ceb11be2290bb1b">
+  <source>Cancel</source>
+  <target>Annuler</target>
+</trans-unit>
+<trans-unit id="s4cbf14dccf90d3be">
+  <source>Exercise Complete</source>
+  <target>Exercice termin&#233;</target>
+</trans-unit>
+<trans-unit id="sd40f20f0ad11dd82">
+  <source>Exercise Stopped</source>
+  <target>Exercice arr&#234;t&#233;</target>
+</trans-unit>
+<trans-unit id="s0b8010e6285fbd0c">
+  <source>Contractions</source>
+  <target>Contractions</target>
+</trans-unit>
+<trans-unit id="s0379fc73608ab971">
+  <source>Done</source>
+  <target>Termin&#233;</target>
+</trans-unit>
+<trans-unit id="s24c7b653600df0a0">
+  <source>Round <x id="0" equiv-text="${this._round + 1}"/> of <x id="1" equiv-text="${this._totalRounds}"/></source>
+  <target>Cycle <x id="0" equiv-text="${this._round + 1}"/> sur <x id="1" equiv-text="${this._totalRounds}"/></target>
+</trans-unit>
+<trans-unit id="sbfe3c8c849e7e74c">
+  <source>Tap for contraction (<x id="0" equiv-text="${this._contractionCount}"/>)</source>
+  <target>Appuyez pour une contraction (<x id="0" equiv-text="${this._contractionCount}"/>)</target>
+</trans-unit>
+<trans-unit id="s061cc20e3432dead">
+  <source>Pause</source>
+  <target>Pause</target>
+</trans-unit>
+<trans-unit id="s89118d3a7be870ca">
+  <source>Resume</source>
+  <target>Reprendre</target>
+</trans-unit>
+<trans-unit id="sd9ad53251f2330a5">
+  <source>Stop</source>
+  <target>Arr&#234;ter</target>
+</trans-unit>
+<trans-unit id="s337a1e9022a8d19f">
+  <source>Table</source>
+  <target>Table</target>
+</trans-unit>
+</body>
+</file>
+</xliff>

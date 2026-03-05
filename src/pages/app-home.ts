@@ -6,7 +6,7 @@ import { getSettings, getSessions, getCompetitions } from '../services/db.js';
 import { formatTime } from '../services/tables.js';
 import { navigate } from '../navigation.js';
 import { getLocale } from '../localization.js';
-import { iconTrophy } from '../components/icons.js';
+import { iconTrophy, iconNereus } from '../components/icons.js';
 import type { Session, Competition } from '../types.js';
 
 @localized()
@@ -30,6 +30,25 @@ export class AppHome extends LitElement {
         text-align: center;
         margin-bottom: var(--spacing-xl);
         padding-top: var(--spacing-lg);
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-sm);
+        margin-bottom: var(--spacing-xs);
+      }
+
+      .logo-icon {
+        color: var(--color-accent);
+        display: flex;
+        align-items: center;
+      }
+
+      .logo-icon svg {
+        width: 36px;
+        height: 36px;
       }
 
       .app-name {
@@ -277,7 +296,10 @@ export class AppHome extends LitElement {
     return html`
       <div class="page">
         <div class="header">
-          <div class="app-name">Nereus</div>
+          <div class="logo">
+            <span class="logo-icon">${iconNereus}</span>
+            <div class="app-name">Nereus</div>
+          </div>
           <div class="app-subtitle">${msg('Freediving Breath-Hold Training')}</div>
         </div>
 

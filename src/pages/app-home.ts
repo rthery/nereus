@@ -348,7 +348,7 @@ export class AppHome extends LitElement {
             <span class="logo-icon">${iconNereus}</span>
             <div class="app-name">Nereus</div>
           </div>
-          <div class="app-subtitle">${msg('Freediving Breath-Hold Training')}</div>
+          <div class="app-subtitle">${msg('Track Your Freediving Journey')}</div>
         </div>
 
         <div class="pb-card">

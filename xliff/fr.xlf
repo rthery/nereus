@@ -67,9 +67,10 @@
   <source>PB Result</source>
   <target>Résultat du PB</target>
 </trans-unit>
-<trans-unit id="s5ffd7c4856a66b48">
-  <source>Freediving Breath-Hold Training</source>
-  <target>Entraînement d'apnée statique</target>
+<trans-unit id="sdb63fccb4347e06e">
+  <source>Track Your Freediving Journey</source>
+  <target>Suivez votre parcours en apn&#233;e</target>
+
 </trans-unit>
 <trans-unit id="sd190523b76b66298">
   <source>Not set yet</source>

@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { sharedStyles } from '../styles/theme.js';
 import { getSettings, getSessions, getCompetitions } from '../services/db.js';
 import { formatTime } from '../services/tables.js';
@@ -15,6 +15,7 @@ export class AppHome extends LitElement {
   @state() private _pb = 0;
   @state() private _recentSessions: Session[] = [];
   @state() private _recentCompetitions: Competition[] = [];
+  @state() private _suggestedType: 'co2' | 'o2' | null = null;
 
   static styles = [
     sharedStyles,
@@ -67,14 +68,25 @@ export class AppHome extends LitElement {
       .pb-card {
         background: var(--color-bg-surface);
         border-radius: var(--radius-lg);
-        padding: var(--spacing-xl);
+        padding: var(--spacing-md) var(--spacing-lg);
         text-align: center;
-        margin-bottom: var(--spacing-lg);
+        margin-bottom: var(--spacing-md);
         border: 1px solid var(--color-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--spacing-md);
+      }
+
+      .pb-card-left {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
       }
 
       .pb-label {
-        font-size: var(--font-sm);
+        font-size: var(--font-xs);
         color: var(--color-text-muted);
         text-transform: uppercase;
         letter-spacing: 0.08em;
@@ -82,15 +94,15 @@ export class AppHome extends LitElement {
       }
 
       .pb-value {
-        font-size: var(--font-3xl);
+        font-size: var(--font-2xl);
         font-weight: 800;
         color: var(--color-text-primary);
-        margin: var(--spacing-sm) 0;
         font-variant-numeric: tabular-nums;
+        line-height: 1;
       }
 
       .pb-value.empty {
-        font-size: var(--font-xl);
+        font-size: var(--font-lg);
         color: var(--color-text-muted);
       }
 
@@ -102,6 +114,34 @@ export class AppHome extends LitElement {
         border: none;
         font-weight: 600;
         font-family: inherit;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .suggestion-chip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--spacing-sm) var(--spacing-md);
+        background: var(--color-accent-subtle);
+        border: 1px solid rgba(99, 179, 237, 0.4);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--spacing-md);
+        cursor: pointer;
+        font-size: var(--font-sm);
+        font-weight: 600;
+        color: var(--color-accent);
+        transition: background var(--transition-fast);
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .suggestion-chip:hover {
+        background: rgba(99, 179, 237, 0.15);
+      }
+
+      .suggestion-arrow {
+        font-size: var(--font-lg);
+        line-height: 1;
       }
 
       .actions {
@@ -281,6 +321,14 @@ export class AppHome extends LitElement {
     this._pb = settings.personalBest;
     this._recentSessions = sessions;
     this._recentCompetitions = competitions;
+
+    // Suggest the opposite of the most recent completed training session.
+    const lastTraining = sessions.find(
+      (s) => s.completed && (s.type === 'co2' || s.type === 'o2'),
+    );
+    if (lastTraining && settings.personalBest > 0) {
+      this._suggestedType = lastTraining.type === 'co2' ? 'o2' : 'co2';
+    }
   }
 
   private _formatDate(ts: number): string {
@@ -304,14 +352,23 @@ export class AppHome extends LitElement {
         </div>
 
         <div class="pb-card">
-          <div class="pb-label">${msg('Personal Best')}</div>
-          ${this._pb > 0
-            ? html`<div class="pb-value">${formatTime(this._pb)}</div>`
-            : html`<div class="pb-value empty">${msg('Not set yet')}</div>`}
+          <div class="pb-card-left">
+            <div class="pb-label">${msg('Personal Best')}</div>
+            ${this._pb > 0
+              ? html`<div class="pb-value">${formatTime(this._pb)}</div>`
+              : html`<div class="pb-value empty">${msg('Not set yet')}</div>`}
+          </div>
           <button class="pb-action" @click=${() => navigate('/pb-test')}>
             ${this._pb > 0 ? msg('Retest PB') : msg('Take PB Test')}
           </button>
         </div>
+
+        ${this._suggestedType ? html`
+          <div class="suggestion-chip" @click=${() => navigate(`/${this._suggestedType}`)}>
+            <span>${msg(str`Try a ${this._suggestedType!.toUpperCase()} session today`)}</span>
+            <span class="suggestion-arrow">→</span>
+          </div>
+        ` : ''}
 
         <div class="actions">
           <div class="action-card co2" @click=${() => navigate('/co2')}>
@@ -326,10 +383,12 @@ export class AppHome extends LitElement {
             <div class="action-title">${msg('Competitions')}</div>
             <div class="action-desc">${msg('Track your competition results and see your progress per discipline')}</div>
           </div>
-          <div class="action-card pb" @click=${() => navigate('/pb-test')}>
-            <div class="action-title">${msg('PB Test')}</div>
-            <div class="action-desc">${msg('Guided determination exercise to measure your max breath hold')}</div>
-          </div>
+          ${this._pb === 0 ? html`
+            <div class="action-card pb" @click=${() => navigate('/pb-test')}>
+              <div class="action-title">${msg('PB Test')}</div>
+              <div class="action-desc">${msg('Guided determination exercise to measure your max breath hold')}</div>
+            </div>
+          ` : ''}
         </div>
 
         ${this._recentSessions.length > 0

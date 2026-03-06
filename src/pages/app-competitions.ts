@@ -22,6 +22,21 @@ const GOLD = '#FFD700';
 const SILVER = '#C0C0C0';
 const BRONZE = '#CD7F32';
 
+const MAX_TEXT_LENGTH = 80;
+
+/**
+ * Strips characters that could be used for HTML/script injection and
+ * enforces a maximum character length. Lit already escapes template
+ * interpolations, but this adds a defence-in-depth layer before values
+ * reach storage.
+ */
+function sanitizeText(raw: string, maxLen = MAX_TEXT_LENGTH): string {
+  return raw
+    .replace(/[<>&"'`]/g, '')
+    .trim()
+    .slice(0, maxLen);
+}
+
 function rankColor(rank: number): string {
   if (rank === 1) return GOLD;
   if (rank === 2) return SILVER;
@@ -641,13 +656,15 @@ export class AppCompetitions extends LitElement {
     }
 
     const id = this._editingId ?? `comp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const safeName = sanitizeText(this._formName);
+    const safeLocation = sanitizeText(this._formLocation);
     const competition: Competition = {
       id,
       date: new Date(this._formDate).getTime(),
-      name: this._formName.trim(),
+      name: safeName,
       results,
     };
-    if (this._formLocation.trim()) competition.location = this._formLocation.trim();
+    if (safeLocation) competition.location = safeLocation;
 
     await saveCompetition(competition);
     this._showForm = false;
@@ -767,6 +784,7 @@ export class AppCompetitions extends LitElement {
           <input
             class="form-input"
             type="text"
+            maxlength=${MAX_TEXT_LENGTH}
             .value=${this._formName}
             placeholder=${msg('e.g. French Open 2025')}
             @input=${(e: Event) => { this._formName = (e.target as HTMLInputElement).value; }}
@@ -788,6 +806,7 @@ export class AppCompetitions extends LitElement {
           <input
             class="form-input"
             type="text"
+            maxlength=${MAX_TEXT_LENGTH}
             .value=${this._formLocation}
             placeholder=${msg('e.g. Paris, France')}
             @input=${(e: Event) => { this._formLocation = (e.target as HTMLInputElement).value; }}

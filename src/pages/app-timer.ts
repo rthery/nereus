@@ -3,7 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { localized, msg, str } from '@lit/localize';
 import { sharedStyles } from '../styles/theme.js';
 import { TimerEngine } from '../services/timer-engine.js';
-import { getSettings, saveSession } from '../services/db.js';
+import { getSettings, saveSession, getSessionsToday, getSessionsYesterday } from '../services/db.js';
 import {
   playHoldStart,
   playBreatheStart,
@@ -18,7 +18,7 @@ import {
 } from '../services/vibration.js';
 import { formatTime } from '../services/tables.js';
 import { navigate } from '../navigation.js';
-import { iconCheckCircle, iconAlertTriangle, iconX } from '../components/icons.js';
+import { iconCheckCircle, iconAlertTriangle } from '../components/icons.js';
 import type { TableRound, Phase, TimerState, TableType } from '../types.js';
 
 @localized()
@@ -37,6 +37,12 @@ export class AppTimer extends LitElement {
   @state() private _vibrationEnabled = true;
   @state() private _contractionCount = 0;
   @state() private _started = false;
+
+  // Training-frequency warnings shown on the pre-start screen.
+  @state() private _warnSameType = false;
+  @state() private _warnOtherType = false;
+  @state() private _warnYesterdayType: 'same' | 'other' | null = null;
+  private _warningsLoaded = false;
 
   private _engine: TimerEngine | null = null;
   private _wakeLock: WakeLockSentinel | null = null;
@@ -78,23 +84,7 @@ export class AppTimer extends LitElement {
         padding-top: max(var(--spacing-md), env(safe-area-inset-top, 0));
       }
 
-      .back-btn {
-        background: none;
-        border: none;
-        color: var(--color-text-secondary);
-        cursor: pointer;
-        padding: var(--spacing-sm);
-        font-family: inherit;
-        display: flex;
-        align-items: center;
-      }
-
-      .back-btn svg {
-        width: 24px;
-        height: 24px;
-      }
-
-      .round-info {
+.round-info {
         font-size: var(--font-sm);
         font-weight: 600;
         color: var(--color-text-secondary);
@@ -233,6 +223,19 @@ export class AppTimer extends LitElement {
         text-align: center;
       }
 
+      .warning-banner {
+        width: 100%;
+        max-width: 400px;
+        padding: var(--spacing-sm) var(--spacing-md);
+        background: rgba(245, 158, 11, 0.12);
+        border: 1px solid rgba(245, 158, 11, 0.5);
+        border-radius: var(--radius-md);
+        color: var(--color-text-primary);
+        font-size: var(--font-sm);
+        line-height: 1.5;
+        text-align: left;
+      }
+
       .pre-start h2 {
         font-size: var(--font-xl);
         color: var(--color-text-primary);
@@ -360,6 +363,43 @@ export class AppTimer extends LitElement {
     this._loadSettings();
   }
 
+  protected override updated(changedProps: Map<string, unknown>): void {
+    super.updated(changedProps);
+    if (changedProps.has('tableData') && this.tableData && !this._warningsLoaded) {
+      void this._loadWarnings();
+    }
+  }
+
+  private async _loadWarnings(): Promise<void> {
+    this._warningsLoaded = true;
+    if (!this.tableData) return;
+    const type = this.tableData.type;
+    const otherType: TableType = type === 'co2' ? 'o2' : 'co2';
+
+    const todaySessions = await getSessionsToday();
+    const completedTrainingToday = todaySessions.filter(
+      (s) => s.completed && (s.type === 'co2' || s.type === 'o2'),
+    );
+    const sameToday = completedTrainingToday.some((s) => s.type === type);
+    const otherToday = completedTrainingToday.some((s) => s.type === otherType);
+
+    if (sameToday) {
+      this._warnSameType = true;
+    } else if (otherToday) {
+      this._warnOtherType = true;
+    } else {
+      const yesterdaySessions = await getSessionsYesterday();
+      const completedYesterday = yesterdaySessions.filter(
+        (s) => s.completed && (s.type === 'co2' || s.type === 'o2'),
+      );
+      if (completedYesterday.some((s) => s.type === type)) {
+        this._warnYesterdayType = 'same';
+      } else if (completedYesterday.some((s) => s.type === otherType)) {
+        this._warnYesterdayType = 'other';
+      }
+    }
+  }
+
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this._engine?.destroy();
@@ -451,6 +491,15 @@ export class AppTimer extends LitElement {
     this._saveSession(false);
   }
 
+  /** DEV only: instantly end the session and save it as completed. */
+  private _debugComplete(): void {
+    this._engine?.abort();
+    this._completed = true;
+    this._running = false;
+    this._releaseWakeLock();
+    void this._saveSession(true);
+  }
+
   private _markContraction(): void {
     this._engine?.markContraction();
     this._contractionCount =
@@ -491,15 +540,39 @@ export class AppTimer extends LitElement {
     }
 
     if (!this._started) {
+      const typeLabel = this.tableData.type.toUpperCase();
+      const otherLabel = this.tableData.type === 'co2' ? 'O2' : 'CO2';
       return html`
         <div class="pre-start">
-          <h2>${msg(str`${this.tableData.type.toUpperCase()} Table Exercise`)}</h2>
+          <h2>${msg(str`${typeLabel} Table Exercise`)}</h2>
           <p>
             ${msg(str`${this.tableData.table.length} rounds. Total time: ~${formatTime(
               this.tableData.table.reduce((s, r) => s + r.rest + r.hold, 0),
             )}.`)}
           </p>
           <p>${msg('Find a comfortable position. Relax and breathe naturally.')}</p>
+
+          ${this._warnSameType ? html`
+            <div class="warning-banner">
+              ${msg(str`You have already completed a ${typeLabel} session today. Training the same type twice in one day is counterproductive.`)}
+            </div>
+          ` : ''}
+          ${this._warnOtherType ? html`
+            <div class="warning-banner">
+              ${msg(str`You already did a ${otherLabel} session today. Combining CO2 and O2 training on the same day is not recommended.`)}
+            </div>
+          ` : ''}
+          ${this._warnYesterdayType === 'same' ? html`
+            <div class="warning-banner">
+              ${msg(str`You did a ${typeLabel} session yesterday. Alternate between CO2 and O2 training, and allow rest days between sessions.`)}
+            </div>
+          ` : ''}
+          ${this._warnYesterdayType === 'other' ? html`
+            <div class="warning-banner">
+              ${msg('You trained yesterday. Allow at least one rest day between sessions for best recovery.')}
+            </div>
+          ` : ''}
+
           <button class="btn btn-primary btn-large" @click=${this._start}>
             ${msg('Begin')}
           </button>
@@ -549,7 +622,7 @@ export class AppTimer extends LitElement {
     return html`
       <div class="timer-page ${this._phase}">
         <div class="top-bar">
-          <button class="back-btn" @click=${this._abort}>${iconX}</button>
+          <div></div>
           <div class="round-info">
             ${msg(str`Round ${this._round + 1} of ${this._totalRounds}`)}
           </div>
@@ -600,6 +673,15 @@ export class AppTimer extends LitElement {
             </button>
             <button class="btn btn-danger" @click=${this._abort}>${msg('Stop')}</button>
           </div>
+          ${import.meta.env.DEV ? html`
+            <button
+              class="btn btn-secondary"
+              style="opacity:0.5;font-size:var(--font-xs);padding:var(--spacing-xs) var(--spacing-sm)"
+              @click=${this._debugComplete}
+            >
+              [DEV] Complete now
+            </button>
+          ` : ''}
         </div>
 
         <div class="table-sidebar">

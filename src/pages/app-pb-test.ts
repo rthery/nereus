@@ -2,7 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { localized, msg, str } from '@lit/localize';
 import { sharedStyles } from '../styles/theme.js';
-import { getSettings, saveSettings, savePB } from '../services/db.js';
+import { getSettings, saveSettings, savePB, getSessionsByType } from '../services/db.js';
 import { formatTime } from '../services/tables.js';
 import {
   playHoldStart,
@@ -32,6 +32,7 @@ export class AppPbTest extends LitElement {
   @state() private _editingResult = false;
   @state() private _soundEnabled = true;
   @state() private _vibrationEnabled = true;
+  @state() private _recentPbWarning = false;
 
   private _intervalId: ReturnType<typeof setInterval> | null = null;
   private _startTime = 0;
@@ -250,12 +251,31 @@ export class AppPbTest extends LitElement {
       .breathe-phase {
         color: var(--color-breathe);
       }
+
+      .warning-banner {
+        width: 100%;
+        padding: var(--spacing-sm) var(--spacing-md);
+        background: rgba(245, 158, 11, 0.12);
+        border: 1px solid rgba(245, 158, 11, 0.5);
+        border-radius: var(--radius-md);
+        color: var(--color-text-primary);
+        font-size: var(--font-sm);
+        line-height: 1.5;
+        text-align: left;
+      }
     `,
   ];
 
   connectedCallback(): void {
     super.connectedCallback();
     this._loadSettings();
+    void this._checkPbTestFrequency();
+  }
+
+  private async _checkPbTestFrequency(): Promise<void> {
+    const sessions = await getSessionsByType('pb-test');
+    const sixtyDaysAgo = Date.now() - 60 * 24 * 60 * 60 * 1000;
+    this._recentPbWarning = sessions.some((s) => s.date >= sixtyDaysAgo);
   }
 
   disconnectedCallback(): void {
@@ -426,6 +446,11 @@ export class AppPbTest extends LitElement {
       case 'intro':
         return html`
           <h2>${msg('PB Test')}</h2>
+          ${this._recentPbWarning ? html`
+            <div class="warning-banner">
+              ${msg('You ran a PB test less than 60 days ago. Maximum attempts should be spaced at least 2 months apart to give your body time to adapt.')}
+            </div>
+          ` : ''}
           <p>
             ${msg('This guided test will determine your maximum breath-hold time. The result is used to generate your CO2 and O2 training tables.')}
           </p>

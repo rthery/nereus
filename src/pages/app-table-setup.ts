@@ -314,7 +314,7 @@ export class AppTableSetup extends LitElement {
     this._difficulty =
       this._mode === 'co2' ? settings.co2Difficulty : settings.o2Difficulty;
     this._roundCount = settings.roundCount;
-    this._customRounds = settings.customRounds;
+    this._customRounds = Math.min(settings.customRounds, 8);
     this._regenerate();
   }
 
@@ -352,22 +352,41 @@ export class AppTableSetup extends LitElement {
 
   private async _setCustomRounds(value: string): Promise<void> {
     const n = parseInt(value, 10);
-    if (isNaN(n) || n < 2 || n > 12) return;
+    if (isNaN(n) || n < 2 || n > 8) return;
     this._customRounds = n;
     await saveSettings({ customRounds: n });
     this._regenerate();
   }
 
-  private _onTimeChange(index: number, field: 'rest' | 'hold', value: string): void {
-    const parts = value.split(':');
-    if (parts.length !== 2) return;
-    const seconds = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
-    if (isNaN(seconds) || seconds < 0) return;
+  /** Strips any character that is not a digit or colon as the user types. */
+  private _filterTimeInput(e: Event): void {
+    const input = e.target as HTMLInputElement;
+    const filtered = input.value.replace(/[^0-9:]/g, '');
+    if (filtered !== input.value) input.value = filtered;
+  }
 
+  private _onTimeChange(e: Event, index: number, field: 'rest' | 'hold'): void {
+    const input = e.target as HTMLInputElement;
+    const raw = input.value.replace(/[^0-9:]/g, '');
+    const parts = raw.split(':');
+    if (parts.length !== 2) {
+      input.value = formatTime(this._editedTable[index][field]);
+      return;
+    }
+    const m = parseInt(parts[0], 10);
+    const s = parseInt(parts[1], 10);
+    if (isNaN(m) || isNaN(s) || s > 59) {
+      input.value = formatTime(this._editedTable[index][field]);
+      return;
+    }
+    // Minimum 5 s so neither rest nor hold can be zeroed out accidentally.
+    const seconds = Math.max(5, m * 60 + s);
     this._editedTable = this._editedTable.map((r, i) =>
       i === index ? { ...r, [field]: seconds } : r,
     );
     this._isEdited = true;
+    const fmt = formatTime(seconds);
+    if (input.value !== fmt) input.value = fmt;
   }
 
   private _resetTable(): void {
@@ -478,8 +497,9 @@ export class AppTableSetup extends LitElement {
               ? html`<input
                   class="custom-rounds-input"
                   type="number"
+                  inputmode="numeric"
                   min="2"
-                  max="12"
+                  max="8"
                   .value=${String(this._customRounds)}
                   @click=${(e: Event) => e.stopPropagation()}
                   @change=${(e: Event) =>
@@ -504,16 +524,16 @@ export class AppTableSetup extends LitElement {
                   type="text"
                   inputmode="numeric"
                   .value=${formatTime(round.rest)}
-                  @change=${(e: Event) =>
-                    this._onTimeChange(i, 'rest', (e.target as HTMLInputElement).value)}
+                  @input=${this._filterTimeInput}
+                  @change=${(e: Event) => this._onTimeChange(e, i, 'rest')}
                 />
                 <input
                   class="time-input hold"
                   type="text"
                   inputmode="numeric"
                   .value=${formatTime(round.hold)}
-                  @change=${(e: Event) =>
-                    this._onTimeChange(i, 'hold', (e.target as HTMLInputElement).value)}
+                  @input=${this._filterTimeInput}
+                  @change=${(e: Event) => this._onTimeChange(e, i, 'hold')}
                 />
               </div>
             `,

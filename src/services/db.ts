@@ -77,6 +77,25 @@ export async function deleteSession(id: string): Promise<void> {
   await db.delete('sessions', id);
 }
 
+/** Returns all sessions whose date falls within today's calendar day. */
+export async function getSessionsToday(): Promise<Session[]> {
+  const db = await getDB();
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const end = start + 86400000 - 1;
+  return db.getAllFromIndex('sessions', 'date', IDBKeyRange.bound(start, end));
+}
+
+/** Returns all sessions whose date falls within yesterday's calendar day. */
+export async function getSessionsYesterday(): Promise<Session[]> {
+  const db = await getDB();
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const start = todayStart - 86400000;
+  const end = todayStart - 1;
+  return db.getAllFromIndex('sessions', 'date', IDBKeyRange.bound(start, end));
+}
+
 // PB History
 export async function savePB(record: PBRecord): Promise<void> {
   const db = await getDB();

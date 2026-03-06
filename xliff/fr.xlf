@@ -12,24 +12,24 @@
   <target>L'entraînement en apnée comporte des risques inhérents. Avant d'utiliser cette application, veuillez prendre connaissance des points suivants :</target>
 </trans-unit>
 <trans-unit id="hf16a61279a336cea">
-  <source><x id="0" equiv-text="&lt;strong&gt;" />Never train in water alone<x id="1" equiv-text="&lt;/strong&gt;" /> - dry (on land) training is recommended for solo practice</source>
-  <target><x id="0" equiv-text="&lt;strong&gt;" />Ne vous entraînez jamais dans l'eau seul(e)<x id="1" equiv-text="&lt;/strong&gt;" /> - l'entraînement à sec est recommandé pour la pratique en solo</target>
+  <source><x id="0" equiv-text="&lt;strong&gt;"/>Never train in water alone<x id="1" equiv-text="&lt;/strong&gt;"/> - dry (on land) training is recommended for solo practice</source>
+  <target><x id="0" equiv-text="&lt;strong&gt;"/>Ne vous entraînez jamais dans l'eau seul(e)<x id="1" equiv-text="&lt;/strong&gt;"/> - l'entraînement à sec est recommandé pour la pratique en solo</target>
 </trans-unit>
 <trans-unit id="h6470f74dceda4fd1">
-  <source><x id="0" equiv-text="&lt;strong&gt;" />Never hyperventilate<x id="1" equiv-text="&lt;/strong&gt;" /> before breath holds</source>
-  <target><x id="0" equiv-text="&lt;strong&gt;" />Ne faites jamais d'hyperventilation<x id="1" equiv-text="&lt;/strong&gt;" /> avant les apnées</target>
+  <source><x id="0" equiv-text="&lt;strong&gt;"/>Never hyperventilate<x id="1" equiv-text="&lt;/strong&gt;"/> before breath holds</source>
+  <target><x id="0" equiv-text="&lt;strong&gt;"/>Ne faites jamais d'hyperventilation<x id="1" equiv-text="&lt;/strong&gt;"/> avant les apnées</target>
 </trans-unit>
 <trans-unit id="h3012a826f30d777c">
-  <source><x id="0" equiv-text="&lt;strong&gt;" />Stop immediately<x id="1" equiv-text="&lt;/strong&gt;" /> if you feel dizzy, see spots, or experience strong involuntary contractions</source>
-  <target><x id="0" equiv-text="&lt;strong&gt;" />Arrêtez immédiatement<x id="1" equiv-text="&lt;/strong&gt;" /> si vous ressentez des vertiges, voyez des points lumineux ou éprouvez de fortes contractions involontaires</target>
+  <source><x id="0" equiv-text="&lt;strong&gt;"/>Stop immediately<x id="1" equiv-text="&lt;/strong&gt;"/> if you feel dizzy, see spots, or experience strong involuntary contractions</source>
+  <target><x id="0" equiv-text="&lt;strong&gt;"/>Arrêtez immédiatement<x id="1" equiv-text="&lt;/strong&gt;"/> si vous ressentez des vertiges, voyez des points lumineux ou éprouvez de fortes contractions involontaires</target>
 </trans-unit>
 <trans-unit id="h44d18e9784943915">
-  <source><x id="0" equiv-text="&lt;strong&gt;" />Do not train<x id="1" equiv-text="&lt;/strong&gt;" /> if fatigued, ill, or after consuming alcohol</source>
-  <target><x id="0" equiv-text="&lt;strong&gt;" />Ne vous entraînez pas<x id="1" equiv-text="&lt;/strong&gt;" /> si vous êtes fatigué(e), malade ou après avoir consommé de l'alcool</target>
+  <source><x id="0" equiv-text="&lt;strong&gt;"/>Do not train<x id="1" equiv-text="&lt;/strong&gt;"/> if fatigued, ill, or after consuming alcohol</source>
+  <target><x id="0" equiv-text="&lt;strong&gt;"/>Ne vous entraînez pas<x id="1" equiv-text="&lt;/strong&gt;"/> si vous êtes fatigué(e), malade ou après avoir consommé de l'alcool</target>
 </trans-unit>
 <trans-unit id="h9523acd95d3d7a06">
-  <source><x id="0" equiv-text="&lt;strong&gt;" />Consult a doctor<x id="1" equiv-text="&lt;/strong&gt;" /> if you have cardiovascular, respiratory, or neurological conditions</source>
-  <target><x id="0" equiv-text="&lt;strong&gt;" />Consultez un médecin<x id="1" equiv-text="&lt;/strong&gt;" /> si vous souffrez de troubles cardiovasculaires, respiratoires ou neurologiques</target>
+  <source><x id="0" equiv-text="&lt;strong&gt;"/>Consult a doctor<x id="1" equiv-text="&lt;/strong&gt;"/> if you have cardiovascular, respiratory, or neurological conditions</source>
+  <target><x id="0" equiv-text="&lt;strong&gt;"/>Consultez un médecin<x id="1" equiv-text="&lt;/strong&gt;"/> si vous souffrez de troubles cardiovasculaires, respiratoires ou neurologiques</target>
 </trans-unit>
 <trans-unit id="s57efecd546de5452">
   <source>This app is designed for dry (land-based) static apnea training only.</source>
@@ -120,11 +120,11 @@
   <target>Le test comprend :</target>
 </trans-unit>
 <trans-unit id="h661d548e7aae9319">
-  <source>1. 2-minute relaxation phase<x id="0" equiv-text="&lt;br&gt;" />
-            2. <x id="1" equiv-text="${WARMUP_COUNT}" /> warm-up holds at 50% estimated max<x id="2" equiv-text="&lt;br&gt;" />
+  <source>1. 2-minute relaxation phase<x id="0" equiv-text="&lt;br&gt;"/>
+            2. <x id="1" equiv-text="${WARMUP_COUNT}"/> warm-up holds at 50% estimated max<x id="2" equiv-text="&lt;br&gt;"/>
             3. Final maximum breath hold</source>
-  <target>1. Phase de relaxation de 2 minutes<x id="0" equiv-text="&lt;br&gt;" />
-            2. <x id="1" equiv-text="${WARMUP_COUNT}" /> apnées d'échauffement à 50 % du maximum estimé<x id="2" equiv-text="&lt;br&gt;" />
+  <target>1. Phase de relaxation de 2 minutes<x id="0" equiv-text="&lt;br&gt;"/>
+            2. <x id="1" equiv-text="${WARMUP_COUNT}"/> apnées d'échauffement à 50 % du maximum estimé<x id="2" equiv-text="&lt;br&gt;"/>
             3. Apnée maximale finale</target>
 </trans-unit>
 <trans-unit id="s7f0064f8cb6cfd6d">
@@ -152,8 +152,8 @@
   <target>Apnée d'échauffement</target>
 </trans-unit>
 <trans-unit id="sb2b44de8a70ae954">
-  <source><x id="0" equiv-text="${this._currentWarmup + 1}" /> of <x id="1" equiv-text="${WARMUP_COUNT}" /></source>
-  <target><x id="0" equiv-text="${this._currentWarmup + 1}" /> sur <x id="1" equiv-text="${WARMUP_COUNT}" /></target>
+  <source><x id="0" equiv-text="${this._currentWarmup + 1}"/> of <x id="1" equiv-text="${WARMUP_COUNT}"/></source>
+  <target><x id="0" equiv-text="${this._currentWarmup + 1}"/> sur <x id="1" equiv-text="${WARMUP_COUNT}"/></target>
 </trans-unit>
 <trans-unit id="s73de702bbe422cb7">
   <source>Rest</source>
@@ -164,8 +164,8 @@
   <target>Respirez calmement...</target>
 </trans-unit>
 <trans-unit id="sa897ede39c2ea594">
-  <source>Hold for ~<x id="0" equiv-text="${formatTime(Math.round(this._estimatedMax * 0.5))}" />. Don't push hard, this is just a warm-up.</source>
-  <target>Apnée d'environ ~<x id="0" equiv-text="${formatTime(Math.round(this._estimatedMax * 0.5))}" />. Ne forcez pas, c'est juste un échauffement.</target>
+  <source>Hold for ~<x id="0" equiv-text="${formatTime(Math.round(this._estimatedMax * 0.5))}"/>. Don't push hard, this is just a warm-up.</source>
+  <target>Apnée d'environ ~<x id="0" equiv-text="${formatTime(Math.round(this._estimatedMax * 0.5))}"/>. Ne forcez pas, c'est juste un échauffement.</target>
 </trans-unit>
 <trans-unit id="s6595c451b8af8170">
   <source>Start Hold</source>
@@ -212,16 +212,16 @@
   <target>Record personnel (PB)</target>
 </trans-unit>
 <trans-unit id="sc85aeb4cf544e054">
-  <source>Previous: <x id="0" equiv-text="${formatTime(this._oldPb)}" /></source>
-  <target>Précédent : <x id="0" equiv-text="${formatTime(this._oldPb)}" /></target>
+  <source>Previous: <x id="0" equiv-text="${formatTime(this._oldPb)}"/></source>
+  <target>Précédent : <x id="0" equiv-text="${formatTime(this._oldPb)}"/></target>
 </trans-unit>
 <trans-unit id="s12351417fb544e3d">
-  <source>+<x id="0" equiv-text="${improvement}" />s</source>
-  <target>+<x id="0" equiv-text="${improvement}" />s</target>
+  <source>+<x id="0" equiv-text="${improvement}"/>s</source>
+  <target>+<x id="0" equiv-text="${improvement}"/>s</target>
 </trans-unit>
 <trans-unit id="s087d3d07b52adbf6">
-  <source><x id="0" equiv-text="${improvement}" />s</source>
-  <target><x id="0" equiv-text="${improvement}" />s</target>
+  <source><x id="0" equiv-text="${improvement}"/>s</source>
+  <target><x id="0" equiv-text="${improvement}"/>s</target>
 </trans-unit>
 <trans-unit id="s3446d92f07213366">
   <source> (same)</source>
@@ -304,8 +304,8 @@
   <target>Retour haptique sur mobile</target>
 </trans-unit>
 <trans-unit id="s9a0a018f0c24ae15">
-  <source><x id="0" equiv-text="${this._mode.toUpperCase()}" /> Table</source>
-  <target>Table <x id="0" equiv-text="${this.mode.toUpperCase()}" /></target>
+  <source><x id="0" equiv-text="${this._mode.toUpperCase()}"/> Table</source>
+  <target>Table <x id="0" equiv-text="${this.mode.toUpperCase()}"/></target>
 </trans-unit>
 <trans-unit id="sa2e4b9f3f7aedc5a">
   <source>You need to set your Personal Best before generating tables.</source>
@@ -316,8 +316,8 @@
   <target>Faire le test de PB</target>
 </trans-unit>
 <trans-unit id="s5ae6bafa7fb5f771">
-  <source>PB: <x id="0" equiv-text="${formatTime(this._pb)}" /></source>
-  <target>PB : <x id="0" equiv-text="${formatTime(this._pb)}" /></target>
+  <source>PB: <x id="0" equiv-text="${formatTime(this._pb)}"/></source>
+  <target>PB : <x id="0" equiv-text="${formatTime(this._pb)}"/></target>
 </trans-unit>
 <trans-unit id="sf5b5feed86cd1489">
   <source>Constant hold time with decreasing rest. Builds CO2 tolerance by preventing full recovery between holds.</source>
@@ -392,12 +392,12 @@
   <target>Retour à l'accueil</target>
 </trans-unit>
 <trans-unit id="sa2e99e63719dbfc9">
-  <source><x id="0" equiv-text="${this.tableData.type.toUpperCase()}" /> Table Exercise</source>
-  <target>Exercice de table <x id="0" equiv-text="${this.tableData.type.toUpperCase()}" /></target>
+  <source><x id="0" equiv-text="${typeLabel}"/> Table Exercise</source>
+  <target>Exercice de table <x id="0" equiv-text="${this.tableData.type.toUpperCase()}"/></target>
 </trans-unit>
 <trans-unit id="s945ef03fd4f0b569">
-  <source><x id="0" equiv-text="${this.tableData.table.length}" /> rounds. Total time: ~<x id="1" equiv-text="${formatTime(this.tableData.table.reduce((s, r) =&gt; s + r.rest + r.hold, 0))}" />.</source>
-  <target><x id="0" equiv-text="${this.tableData.table.length}" /> cycles. Durée totale : ~<x id="1" equiv-text="${formatTime(this.tableData.table.reduce((s, r) =&gt; s + r.rest + r.hold, 0))}" />.</target>
+  <source><x id="0" equiv-text="${this.tableData.table.length}"/> rounds. Total time: ~<x id="1" equiv-text="${formatTime(this.tableData.table.reduce((s, r) =&gt; s + r.rest + r.hold, 0))}"/>.</source>
+  <target><x id="0" equiv-text="${this.tableData.table.length}"/> cycles. Durée totale : ~<x id="1" equiv-text="${formatTime(this.tableData.table.reduce((s, r) =&gt; s + r.rest + r.hold, 0))}"/>.</target>
 </trans-unit>
 <trans-unit id="s15a89e25a33726c4">
   <source>Find a comfortable position. Relax and breathe naturally.</source>
@@ -428,12 +428,12 @@
   <target>Terminé</target>
 </trans-unit>
 <trans-unit id="s24c7b653600df0a0">
-  <source>Round <x id="0" equiv-text="${this._round + 1}" /> of <x id="1" equiv-text="${this._totalRounds}" /></source>
-  <target>Cycle <x id="0" equiv-text="${this._round + 1}" /> sur <x id="1" equiv-text="${this._totalRounds}" /></target>
+  <source>Round <x id="0" equiv-text="${this._round + 1}"/> of <x id="1" equiv-text="${this._totalRounds}"/></source>
+  <target>Cycle <x id="0" equiv-text="${this._round + 1}"/> sur <x id="1" equiv-text="${this._totalRounds}"/></target>
 </trans-unit>
 <trans-unit id="sbfe3c8c849e7e74c">
-  <source>Tap for contraction (<x id="0" equiv-text="${this._contractionCount}" />)</source>
-  <target>Appuyez pour une contraction (<x id="0" equiv-text="${this._contractionCount}" />)</target>
+  <source>Tap for contraction (<x id="0" equiv-text="${this._contractionCount}"/>)</source>
+  <target>Appuyez pour une contraction (<x id="0" equiv-text="${this._contractionCount}"/>)</target>
 </trans-unit>
 <trans-unit id="s061cc20e3432dead">
   <source>Pause</source>
@@ -628,6 +628,30 @@
 <trans-unit id="s90bd4083d33bf7a2">
   <source>Recent Competitions</source>
 <target>Compétitions récentes</target></trans-unit>
+<trans-unit id="s0acdea61627d7778">
+  <source>You ran a PB test less than 60 days ago. Maximum attempts should be spaced at least 2 months apart to give your body time to adapt.</source>
+  <target>Vous avez effectué un test de PB il y a moins de 60 jours. Les tentatives doivent être espacées d'au moins 2 mois pour laisser le temps à votre corps de s'adapter.</target>
+</trans-unit>
+<trans-unit id="sfba8ab688b0f45f4">
+  <source>You have already completed a <x id="0" equiv-text="${typeLabel}"/> session today. Training the same type twice in one day is counterproductive.</source>
+  <target>Vous avez déjà effectué une séance <x id="0" equiv-text="${typeLabel}"/> aujourd'hui. S'entraîner deux fois avec le même type en une journée est contre-productif.</target>
+</trans-unit>
+<trans-unit id="sb71cb14c62c0ab21">
+  <source>You already did a <x id="0" equiv-text="${otherLabel}"/> session today. Combining CO2 and O2 training on the same day is not recommended.</source>
+  <target>Vous avez déjà effectué une séance <x id="0" equiv-text="${otherLabel}"/> aujourd'hui. Combiner l'entraînement CO2 et O2 le même jour n'est pas recommandé.</target>
+</trans-unit>
+<trans-unit id="saeea68890567997c">
+  <source>You did a <x id="0" equiv-text="${typeLabel}"/> session yesterday. Alternate between CO2 and O2 training, and allow rest days between sessions.</source>
+  <target>Vous avez effectué une séance <x id="0" equiv-text="${typeLabel}"/> hier. Alternez entre les entraînements CO2 et O2, et laissez des jours de repos entre les séances.</target>
+</trans-unit>
+<trans-unit id="s42ba4f1ce5835d0d">
+  <source>You trained yesterday. Allow at least one rest day between sessions for best recovery.</source>
+  <target>Vous vous êtes entraîné(e) hier. Laissez au moins un jour de repos entre les séances pour une meilleure récupération.</target>
+</trans-unit>
+<trans-unit id="s9352a4c7b95b0b8e">
+  <source>Try a <x id="0" equiv-text="${this._suggestedType!.toUpperCase()}"/> session today</source>
+  <target>Essayez une séance <x id="0" equiv-text="${this._suggestedType!.toUpperCase()}"/> aujourd'hui</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

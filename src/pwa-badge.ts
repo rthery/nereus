@@ -1,5 +1,5 @@
 import { LitElement, css, html } from 'lit'
-import { customElement, property, state } from 'lit/decorators.js'
+import { customElement, state } from 'lit/decorators.js'
 import { registerSW } from 'virtual:pwa-register'
 
 /**
@@ -7,15 +7,12 @@ import { registerSW } from 'virtual:pwa-register'
  */
 @customElement('pwa-badge')
 export class PwaBadge extends LitElement {
-    @property()
     private _period = 60 * 60 * 1000 // check for updates every hour
-    @property()
     private _swActivated = false
     @state()
     private _offlineReady = false
     @state()
     private _needRefresh = false
-    @property()
     private _updateServiceWorker: undefined | ((reloadPage?: boolean) => Promise<void>)
 
     firstUpdated() {

@@ -78,13 +78,24 @@ export interface Competition {
   results: DisciplineResult[];
 }
 
-export interface DifficultyPreset {
+/** CO2 table preset (Table A — constant hold, decreasing rest). */
+export interface CO2Preset {
+  /** Hold duration = round(PB × holdFactor). */
   holdFactor: number;
-  decrement?: number;
-  minRest?: number;
-  increment?: number;
-  rest?: number;
-  minHold?: number;
+  /** Rest decrements by this many seconds each round. */
+  decrement: number;
+}
+
+/** O2 table preset (Table B — increasing hold, constant rest). */
+export interface O2Preset {
+  /** First hold = round(PB × startFactor). */
+  startFactor: number;
+  /** Hold grows by this many seconds each round. */
+  increment: number;
+  /** Fixed rest between holds (seconds). */
+  rest: number;
+  /** Safety ceiling: maxHold ≤ round(PB × maxFactor). */
+  maxFactor: number;
 }
 
 export interface TimerState {

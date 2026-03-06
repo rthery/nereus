@@ -322,12 +322,21 @@ export class AppHome extends LitElement {
     this._recentSessions = sessions;
     this._recentCompetitions = competitions;
 
-    // Suggest the opposite of the most recent completed training session.
-    const lastTraining = sessions.find(
-      (s) => s.completed && (s.type === 'co2' || s.type === 'o2'),
+    // Suggest the opposite of the most recent completed training session,
+    // but only if the user hasn't already trained today (same-day rule).
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const trainedToday = sessions.some(
+      (s) => s.completed && (s.type === 'co2' || s.type === 'o2') && s.date >= todayStart.getTime(),
     );
-    if (lastTraining && settings.personalBest > 0) {
-      this._suggestedType = lastTraining.type === 'co2' ? 'o2' : 'co2';
+
+    if (!trainedToday && settings.personalBest > 0) {
+      const lastTraining = sessions.find(
+        (s) => s.completed && (s.type === 'co2' || s.type === 'o2'),
+      );
+      if (lastTraining) {
+        this._suggestedType = lastTraining.type === 'co2' ? 'o2' : 'co2';
+      }
     }
   }
 

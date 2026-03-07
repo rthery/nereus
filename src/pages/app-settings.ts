@@ -3,6 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { localized, msg } from '@lit/localize';
 import { setLocale, detectLocale } from '../localization.js';
 import { sharedStyles } from '../styles/theme.js';
+import { iconSettings } from '../components/icons.js';
 import { getSettings, saveSettings, savePB } from '../services/db.js';
 import { formatTime } from '../services/tables.js';
 import type { ThemePreference, LocalePreference } from '../types.js';
@@ -279,7 +280,10 @@ export class AppSettings extends LitElement {
   render() {
     return html`
       <div class="page">
-        <h1 class="page-title">${msg('Settings')}</h1>
+        <div style="display:flex;align-items:center;gap:var(--spacing-sm);margin-bottom:var(--spacing-xl)">
+          <span style="color:var(--color-accent);display:flex;align-items:center">${iconSettings}</span>
+          <h1 class="page-title" style="margin:0">${msg('Settings')}</h1>
+        </div>
 
         <div class="section">
           <div class="section-title">${msg('Personal Best')}</div>

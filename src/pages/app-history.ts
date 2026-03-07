@@ -15,7 +15,7 @@ import {
 } from '../services/db.js';
 import { formatTime } from '../services/tables.js';
 import { formatDisciplineValue } from '../services/disciplines.js';
-import { iconX, iconTrophy, iconEdit, symbolInhale, symbolExhale } from '../components/icons.js';
+import { iconX, iconTrophy, iconEdit, iconBarChart2 } from '../components/icons.js';
 import { getLocale } from '../localization.js';
 import { navigate } from '../navigation.js';
 import type { Session, PBRecord, Competition, BreathingSession } from '../types.js';
@@ -567,8 +567,7 @@ export class AppHistory extends LitElement {
       <div class="session-card">
         <div class="card-top">
           <div>
-            <span class="session-type" style="color:var(--color-breathe);display:inline-flex;align-items:center;gap:4px">
-              <span style="display:inline-flex;gap:2px;align-items:center">${symbolInhale}${symbolExhale}</span>
+            <span class="session-type" style="color:var(--color-breathe)">
               ${msg('Breathing')}
             </span>
             <span class="session-status ${b.completed ? 'completed' : 'incomplete'}">
@@ -704,7 +703,10 @@ export class AppHistory extends LitElement {
 
     return html`
       <div class="page">
-        <h1 class="page-title">${msg('History')}</h1>
+        <div style="display:flex;align-items:center;gap:var(--spacing-sm);margin-bottom:var(--spacing-lg)">
+          <span style="color:var(--color-accent);display:flex;align-items:center">${iconBarChart2}</span>
+          <h1 class="page-title" style="margin:0">${msg('History')}</h1>
+        </div>
 
         <div class="stats-grid">
           <div class="stat-card">

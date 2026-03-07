@@ -3,7 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { localized, msg, str } from '@lit/localize';
 import { sharedStyles } from '../styles/theme.js';
 import { getSettings, saveSettings } from '../services/db.js';
-import { iconInfo, symbolBreathe, symbolHoldIn } from '../components/icons.js';
+import { iconInfo, iconWind, symbolBreathe, symbolHoldIn } from '../components/icons.js';
 import {
   generateCO2Table,
   generateO2Table,
@@ -70,6 +70,7 @@ export class AppTableSetup extends LitElement {
         border-radius: var(--radius-full);
         padding: 3px;
         border: 1px solid var(--color-border);
+        margin-bottom: var(--spacing-lg);
       }
 
       .tab-btn {
@@ -530,11 +531,22 @@ export class AppTableSetup extends LitElement {
     `;
   }
 
+  private _renderPageHeader() {
+    if (this.mode) return '';
+    return html`
+      <div style="display:flex;align-items:center;gap:var(--spacing-sm);margin-bottom:var(--spacing-lg)">
+        <span style="color:var(--color-accent);display:flex;align-items:center">${iconWind}</span>
+        <h1 class="page-title" style="margin:0">${msg('Training')}</h1>
+      </div>
+    `;
+  }
+
   render() {
     // Breathing tab — inline setup, no /breathing navigation
     if (this._activeTab === 'breathing' && !this.mode) {
       return html`
         <div class="tabs-header">
+          ${this._renderPageHeader()}
           ${this._renderModeTabs()}
           <div class="page-header">
             <h1 class="page-title breathing">${msg('Breathing')}</h1>
@@ -557,8 +569,9 @@ export class AppTableSetup extends LitElement {
     if (this._pb <= 0) {
       return html`
         <div class="page">
+          ${this._renderPageHeader()}
           ${this._renderModeTabs()}
-          <h1 class="page-title ${this._mode}">${msg(str`${this._mode.toUpperCase()} Table`)}</h1>
+          <h1 class="page-title ${this._mode}" style="margin-bottom:var(--spacing-lg)">${msg(str`${this._mode.toUpperCase()} Table`)}</h1>
           <div class="no-pb">
             <p>${msg('You need to set your Personal Best before generating tables.')}</p>
             <button class="btn btn-primary btn-large" @click=${() => navigate('/pb-test')}>
@@ -571,6 +584,7 @@ export class AppTableSetup extends LitElement {
 
     return html`
       <div class="page">
+        ${this._renderPageHeader()}
         ${this._renderModeTabs()}
         <div class="page-header">
           <h1 class="page-title ${this._mode}">${msg(str`${this._mode.toUpperCase()} Table`)}</h1>
@@ -674,7 +688,7 @@ export class AppTableSetup extends LitElement {
 
         <div class="action-bar">
           <button class="btn btn-primary btn-large" @click=${this._startExercise}>
-            ${msg('Start Exercise')}
+            ${msg('Start')}
           </button>
         </div>
       </div>

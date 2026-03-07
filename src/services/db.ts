@@ -1,8 +1,8 @@
 import { openDB, type IDBPDatabase } from 'idb';
-import { DEFAULT_SETTINGS, type Settings, type Session, type PBRecord, type Competition } from '../types.js';
+import { DEFAULT_SETTINGS, type Settings, type Session, type PBRecord, type Competition, type BreathingSession } from '../types.js';
 
 const DB_NAME = 'nereus';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
 
@@ -29,6 +29,12 @@ function getDB(): Promise<IDBPDatabase> {
         if (oldVersion < 2) {
           if (!db.objectStoreNames.contains('competitions')) {
             const store = db.createObjectStore('competitions', { keyPath: 'id' });
+            store.createIndex('date', 'date');
+          }
+        }
+        if (oldVersion < 3) {
+          if (!db.objectStoreNames.contains('breathing-sessions')) {
+            const store = db.createObjectStore('breathing-sessions', { keyPath: 'id' });
             store.createIndex('date', 'date');
           }
         }
@@ -130,15 +136,33 @@ export async function deleteCompetition(id: string): Promise<void> {
   await db.delete('competitions', id);
 }
 
+// Breathing sessions
+export async function saveBreathingSession(session: BreathingSession): Promise<void> {
+  const db = await getDB();
+  await db.put('breathing-sessions', session);
+}
+
+export async function getBreathingSessions(limit = 100): Promise<BreathingSession[]> {
+  const db = await getDB();
+  const all = await db.getAllFromIndex('breathing-sessions', 'date');
+  return all.reverse().slice(0, limit);
+}
+
+export async function deleteBreathingSession(id: string): Promise<void> {
+  const db = await getDB();
+  await db.delete('breathing-sessions', id);
+}
+
 // Reset (for testing)
 export async function clearAllData(): Promise<void> {
   const db = await getDB();
-  const tx = db.transaction(['settings', 'sessions', 'pb-history', 'competitions'], 'readwrite');
+  const tx = db.transaction(['settings', 'sessions', 'pb-history', 'competitions', 'breathing-sessions'], 'readwrite');
   await Promise.all([
     tx.objectStore('settings').clear(),
     tx.objectStore('sessions').clear(),
     tx.objectStore('pb-history').clear(),
     tx.objectStore('competitions').clear(),
+    tx.objectStore('breathing-sessions').clear(),
     tx.done,
   ]);
 }

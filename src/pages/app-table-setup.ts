@@ -3,30 +3,37 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { localized, msg, str } from '@lit/localize';
 import { sharedStyles } from '../styles/theme.js';
 import { getSettings, saveSettings } from '../services/db.js';
-import { iconInfo } from '../components/icons.js';
+import { iconInfo, symbolBreathe, symbolHoldIn } from '../components/icons.js';
 import {
   generateCO2Table,
   generateO2Table,
   formatTime,
   totalDuration,
+  CO2_PRESETS,
+  O2_PRESETS,
 } from '../services/tables.js';
 import { navigate } from '../navigation.js';
 import type { TableRound, Difficulty, TableType, RoundCount } from '../types.js';
+import './app-breathing-setup.js';
+
+type TrainingTab = 'breathing' | TableType;
 
 @localized()
 @customElement('app-table-setup')
 export class AppTableSetup extends LitElement {
   @property() mode: TableType | '' = '';
 
+  /** Active tab when accessed via /training (no fixed mode prop). Defaults to 'breathing'. */
+  @state() private _activeTab: TrainingTab = 'breathing';
   @state() private _mode: TableType = 'co2';
   @state() private _pb = 0;
   @state() private _difficulty: Difficulty = 'normal';
-  @state() private _roundCount: RoundCount = 8;
-  @state() private _customRounds = 6;
+  /** Number of rounds (2–8). Loaded from settings and saved on each change. */
+  @state() private _rounds = 8;
   @state() private _table: TableRound[] = [];
-  @state() private _editedTable: TableRound[] = [];
-  @state() private _isEdited = false;
   @state() private _showTooltip = false;
+  @state() private _showBreathingTooltip = false;
+  @state() private _showDiffTooltip = false;
 
   static styles = [
     sharedStyles,
@@ -51,8 +58,10 @@ export class AppTableSetup extends LitElement {
         margin: 0;
       }
 
+      /* Semantic title colors: phase/exercise type, not navigation */
       .page-title.co2 { color: var(--color-hold); }
       .page-title.o2 { color: var(--color-breathe); }
+      .page-title.breathing { color: var(--color-accent); }
 
       .tabs {
         display: flex;
@@ -78,14 +87,17 @@ export class AppTableSetup extends LitElement {
         letter-spacing: 0.03em;
       }
 
-      .tab-btn.active.co2 {
-        background: var(--color-hold);
+      /* All active tabs use the primary accent — tab = navigation, not content type */
+      .tab-btn.active {
+        background: var(--color-accent);
         color: #fff;
       }
 
-      .tab-btn.active.o2 {
-        background: var(--color-breathe);
-        color: #fff;
+      /* Container for the tabs row when the breathing tab is active */
+      .tabs-header {
+        padding: var(--spacing-lg) var(--spacing-lg) 0;
+        max-width: 600px;
+        margin: 0 auto;
       }
 
       .info-btn {
@@ -126,6 +138,63 @@ export class AppTableSetup extends LitElement {
         margin-bottom: var(--spacing-lg);
       }
 
+      /* Section label with optional inline info button */
+      .section-label-row {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        margin-bottom: var(--spacing-xs);
+      }
+
+      /* Align info icon with the uppercase label.
+         line-height: 1 collapses the label's line box to the cap-height;
+         line-height: 0 on the button collapses the button to its SVG height,
+         so both sit at exactly the same vertical midpoint in the flex row. */
+      .section-label-row .section-label { line-height: 1; }
+      .section-label-row .info-btn {
+        padding: 0;
+        line-height: 0;
+        display: inline-flex;
+        align-items: center;
+      }
+      .section-label-row .info-btn svg {
+        width: 13px;
+        height: 13px;
+      }
+
+      .section-label {
+        font-size: var(--font-xs);
+        font-weight: 600;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      /* Difficulty info tooltip — structured as labelled rows from preset constants */
+      .diff-tooltip-lines {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+      }
+
+      .diff-tooltip-line {
+        display: flex;
+        gap: var(--spacing-sm);
+        align-items: baseline;
+      }
+
+      .diff-tooltip-name {
+        font-weight: 700;
+        color: var(--color-text-primary);
+        min-width: 60px;
+      }
+
+      .diff-tooltip-note {
+        margin-top: var(--spacing-xs);
+        color: var(--color-text-muted);
+        font-size: var(--font-xs);
+      }
+
       .difficulty-row {
         display: flex;
         gap: var(--spacing-sm);
@@ -153,59 +222,84 @@ export class AppTableSetup extends LitElement {
         border-color: var(--color-accent);
       }
 
-      .section-label {
-        font-size: var(--font-xs);
-        font-weight: 600;
-        color: var(--color-text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: var(--spacing-xs);
+      /* ---- Rounds slider ---- */
+      .rounds-slider-row {
+        margin-bottom: var(--spacing-lg);
       }
 
-      .custom-rounds-input {
-        width: 64px;
-        padding: var(--spacing-xs) var(--spacing-sm);
-        background: var(--color-bg-primary);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-sm);
-        color: var(--color-text-primary);
+      .rounds-slider-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: var(--spacing-sm);
+      }
+
+      .rounds-current {
         font-size: var(--font-sm);
-        font-weight: 600;
-        text-align: center;
-        font-family: inherit;
-        margin-left: var(--spacing-sm);
+        font-weight: 700;
+        color: var(--color-accent);
       }
 
-      .custom-rounds-input:focus {
+      .rounds-ends {
+        font-size: var(--font-xs);
+        color: var(--color-text-muted);
+      }
+
+      .rounds-slider {
+        width: 100%;
+        height: 6px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: var(--color-border);
+        border-radius: var(--radius-full);
         outline: none;
-        border-color: var(--color-accent);
+        cursor: pointer;
+      }
+
+      .rounds-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--color-accent);
+        cursor: pointer;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      }
+
+      .rounds-slider::-moz-range-thumb {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--color-accent);
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.2);
       }
 
       .table-container {
         margin-bottom: var(--spacing-lg);
       }
 
-      .table-header {
-        display: grid;
-        grid-template-columns: 50px 1fr 1fr;
-        gap: var(--spacing-sm);
-        padding: var(--spacing-sm) var(--spacing-md);
-        font-size: var(--font-xs);
-        font-weight: 600;
-        color: var(--color-text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-      }
-
+      /* Shared grid for header + data rows: [round-num] [breathe-col] [hold-col] */
+      .table-header,
       .round-row {
         display: grid;
-        grid-template-columns: 50px 1fr 1fr;
+        grid-template-columns: 28px 1fr 1fr;
+        align-items: center;
         gap: var(--spacing-sm);
         padding: var(--spacing-sm) var(--spacing-md);
+      }
+
+      /* Header row — plain labels, no background */
+      .table-header {
+        padding-bottom: var(--spacing-xs);
+      }
+
+      /* Data rows — surface card */
+      .round-row {
         background: var(--color-bg-surface);
         border-radius: var(--radius-sm);
         margin-bottom: 2px;
-        align-items: center;
         border: 1px solid var(--color-border);
       }
 
@@ -213,29 +307,40 @@ export class AppTableSetup extends LitElement {
         font-size: var(--font-sm);
         font-weight: 700;
         color: var(--color-text-muted);
-      }
-
-      .time-input {
-        background: var(--color-bg-primary);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-sm);
-        padding: var(--spacing-xs) var(--spacing-sm);
-        color: var(--color-text-primary);
-        font-size: var(--font-md);
-        font-weight: 600;
-        font-variant-numeric: tabular-nums;
         text-align: center;
-        width: 100%;
-        font-family: inherit;
       }
 
-      .time-input:focus {
-        outline: none;
-        border-color: var(--color-accent);
+      /* Column cells: header labels and data pills share the same column width */
+      .col-breathe,
+      .col-hold {
+        display: flex;
+        justify-content: center;
       }
 
-      .time-input.rest { color: var(--color-breathe); }
-      .time-input.hold { color: var(--color-hold); }
+      /* Phase pills — mirrors the breathing preset pills style */
+      .round-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: var(--font-sm);
+        font-weight: 700;
+        padding: var(--spacing-xs) var(--spacing-sm);
+        border-radius: var(--radius-full);
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.01em;
+      }
+
+      .round-pill svg { width: 10px; height: 10px; flex-shrink: 0; }
+
+      .round-pill.breathe {
+        background: color-mix(in srgb, var(--color-breathe) 18%, transparent);
+        color: var(--color-breathe);
+      }
+
+      .round-pill.hold {
+        background: color-mix(in srgb, var(--color-hold) 18%, transparent);
+        color: var(--color-hold);
+      }
 
       .total-row {
         display: flex;
@@ -289,23 +394,32 @@ export class AppTableSetup extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-    if (this.mode) this._mode = this.mode;
-    this._load();
+    if (this.mode) {
+      this._mode = this.mode;
+      this._activeTab = this.mode;
+    }
+    // else: _activeTab stays 'breathing' — default for /training
+    void this._load();
   }
 
   updated(changed: Map<string, unknown>): void {
     if (changed.has('mode') && this.mode) {
       this._mode = this.mode;
-      this._load();
-    }
-    if (changed.has('_mode') && !changed.has('mode')) {
-      this._load();
+      this._activeTab = this.mode;
+      void this._load();
     }
   }
 
-  private async _switchMode(m: TableType): Promise<void> {
-    this._mode = m;
+  /** Switch between Breathing / CO2 / O2 tabs (only on /training without mode prop). */
+  private _switchTab(tab: TrainingTab): void {
+    this._activeTab = tab;
     this._showTooltip = false;
+    this._showBreathingTooltip = false;
+    this._showDiffTooltip = false;
+    if (tab !== 'breathing') {
+      this._mode = tab;
+      void this._load();
+    }
   }
 
   private async _load(): Promise<void> {
@@ -313,28 +427,21 @@ export class AppTableSetup extends LitElement {
     this._pb = settings.personalBest;
     this._difficulty =
       this._mode === 'co2' ? settings.co2Difficulty : settings.o2Difficulty;
-    this._roundCount = settings.roundCount;
-    this._customRounds = Math.min(settings.customRounds, 8);
+    // Resolve stored round count to a plain number (2–8).
+    this._rounds =
+      settings.roundCount === 'custom' ? settings.customRounds : settings.roundCount;
     this._regenerate();
-  }
-
-  private get _resolvedRounds(): number {
-    return this._roundCount === 'custom' ? this._customRounds : this._roundCount;
   }
 
   private _regenerate(): void {
     if (this._pb <= 0) {
       this._table = [];
-      this._editedTable = [];
       return;
     }
-    const rounds = this._resolvedRounds;
     this._table =
       this._mode === 'co2'
-        ? generateCO2Table(this._pb, this._difficulty, rounds)
-        : generateO2Table(this._pb, this._difficulty, rounds);
-    this._editedTable = this._table.map((r) => ({ ...r }));
-    this._isEdited = false;
+        ? generateCO2Table(this._pb, this._difficulty, this._rounds)
+        : generateO2Table(this._pb, this._difficulty, this._rounds);
   }
 
   private async _setDifficulty(d: Difficulty): Promise<void> {
@@ -344,61 +451,62 @@ export class AppTableSetup extends LitElement {
     this._regenerate();
   }
 
-  private async _setRoundCount(rc: RoundCount): Promise<void> {
-    this._roundCount = rc;
-    await saveSettings({ roundCount: rc });
+  private async _setRounds(n: number): Promise<void> {
+    this._rounds = n;
+    // Map exact preset values back to named keys so that sliding to 8 gives
+    // roundCount:8 on the next load (not 'custom'), keeping the default clean.
+    const roundCount: RoundCount = (n === 4 || n === 8) ? n as (4 | 8) : 'custom';
+    await saveSettings({ roundCount, customRounds: n });
     this._regenerate();
-  }
-
-  private async _setCustomRounds(value: string): Promise<void> {
-    const n = parseInt(value, 10);
-    if (isNaN(n) || n < 2 || n > 8) return;
-    this._customRounds = n;
-    await saveSettings({ customRounds: n });
-    this._regenerate();
-  }
-
-  /** Strips any character that is not a digit or colon as the user types. */
-  private _filterTimeInput(e: Event): void {
-    const input = e.target as HTMLInputElement;
-    const filtered = input.value.replace(/[^0-9:]/g, '');
-    if (filtered !== input.value) input.value = filtered;
-  }
-
-  private _onTimeChange(e: Event, index: number, field: 'rest' | 'hold'): void {
-    const input = e.target as HTMLInputElement;
-    const raw = input.value.replace(/[^0-9:]/g, '');
-    const parts = raw.split(':');
-    if (parts.length !== 2) {
-      input.value = formatTime(this._editedTable[index][field]);
-      return;
-    }
-    const m = parseInt(parts[0], 10);
-    const s = parseInt(parts[1], 10);
-    if (isNaN(m) || isNaN(s) || s > 59) {
-      input.value = formatTime(this._editedTable[index][field]);
-      return;
-    }
-    // Minimum 5 s so neither rest nor hold can be zeroed out accidentally.
-    const seconds = Math.max(5, m * 60 + s);
-    this._editedTable = this._editedTable.map((r, i) =>
-      i === index ? { ...r, [field]: seconds } : r,
-    );
-    this._isEdited = true;
-    const fmt = formatTime(seconds);
-    if (input.value !== fmt) input.value = fmt;
-  }
-
-  private _resetTable(): void {
-    this._editedTable = this._table.map((r) => ({ ...r }));
-    this._isEdited = false;
   }
 
   private _startExercise(): void {
     navigate('/timer', {
-      table: this._editedTable,
+      table: this._table,
       type: this._mode,
     });
+  }
+
+  /**
+   * Builds the difficulty info tooltip content directly from CO2_PRESETS / O2_PRESETS.
+   * Any change to the preset constants is automatically reflected here.
+   */
+  private _renderDiffTooltip() {
+    const difficulties: Difficulty[] = ['easy', 'normal', 'hard'];
+    const diffLabel = (d: Difficulty) =>
+      d === 'easy' ? msg('Easy') : d === 'normal' ? msg('Normal') : msg('Hard');
+
+    if (this._mode === 'co2') {
+      return html`
+        <div class="diff-tooltip-lines">
+          ${difficulties.map(d => html`
+            <div class="diff-tooltip-line">
+              <span class="diff-tooltip-name">${diffLabel(d)}:</span>
+              <!-- holdFactor from CO2_PRESETS — update the preset to auto-update this display -->
+              <span>${Math.round(CO2_PRESETS[d].holdFactor * 100)}% PB</span>
+            </div>
+          `)}
+          <div class="diff-tooltip-note">
+            ${msg('Rest decreases by 10 s each round.')}
+          </div>
+        </div>
+      `;
+    } else {
+      return html`
+        <div class="diff-tooltip-lines">
+          ${difficulties.map(d => html`
+            <div class="diff-tooltip-line">
+              <span class="diff-tooltip-name">${diffLabel(d)}:</span>
+              <!-- startFactor & increment from O2_PRESETS — auto-synced with logic -->
+              <span>${Math.round(O2_PRESETS[d].startFactor * 100)}% PB, +${O2_PRESETS[d].increment}s/${msg('round')}</span>
+            </div>
+          `)}
+          <div class="diff-tooltip-note">
+            ${msg('Hold increases each round. Rest is constant per level.')}
+          </div>
+        </div>
+      `;
+    }
   }
 
   private _renderModeTabs() {
@@ -407,18 +515,45 @@ export class AppTableSetup extends LitElement {
     return html`
       <div class="tabs" style="margin-bottom:var(--spacing-lg)">
         <button
-          class="tab-btn ${this._mode === 'co2' ? 'active co2' : ''}"
-          @click=${() => this._switchMode('co2')}
+          class="tab-btn ${this._activeTab === 'breathing' ? 'active' : ''}"
+          @click=${() => this._switchTab('breathing')}
+        >${msg('Breathing')}</button>
+        <button
+          class="tab-btn ${this._activeTab === 'co2' ? 'active' : ''}"
+          @click=${() => this._switchTab('co2')}
         >CO2</button>
         <button
-          class="tab-btn ${this._mode === 'o2' ? 'active o2' : ''}"
-          @click=${() => this._switchMode('o2')}
+          class="tab-btn ${this._activeTab === 'o2' ? 'active' : ''}"
+          @click=${() => this._switchTab('o2')}
         >O2</button>
       </div>
     `;
   }
 
   render() {
+    // Breathing tab — inline setup, no /breathing navigation
+    if (this._activeTab === 'breathing' && !this.mode) {
+      return html`
+        <div class="tabs-header">
+          ${this._renderModeTabs()}
+          <div class="page-header">
+            <h1 class="page-title breathing">${msg('Breathing')}</h1>
+            <button
+              class="info-btn ${this._showBreathingTooltip ? 'active' : ''}"
+              @click=${() => { this._showBreathingTooltip = !this._showBreathingTooltip; }}
+              aria-label="Info"
+            >${iconInfo}</button>
+          </div>
+          ${this._showBreathingTooltip ? html`
+            <div class="info-tooltip">
+              ${msg('Guided breathing exercises for relaxation and freediving preparation. Choose a preset pattern and let the animated timer pace your breath.')}
+            </div>
+          ` : ''}
+        </div>
+        <app-breathing-setup embedded></app-breathing-setup>
+      `;
+    }
+
     if (this._pb <= 0) {
       return html`
         <div class="page">
@@ -433,8 +568,6 @@ export class AppTableSetup extends LitElement {
         </div>
       `;
     }
-
-    const activeTable = this._editedTable;
 
     return html`
       <div class="page">
@@ -455,13 +588,24 @@ export class AppTableSetup extends LitElement {
 
         ${this._showTooltip ? html`
           <div class="info-tooltip">
-            ${this.mode === 'co2'
+            ${this._mode === 'co2'
               ? msg('Constant hold time with decreasing rest. Builds CO2 tolerance by preventing full recovery between holds.')
               : msg('Increasing hold time with constant rest. Trains your body to function with progressively lower oxygen levels.')}
           </div>
         ` : ''}
 
-        <div class="section-label">${msg('Difficulty')}</div>
+        <!-- DIFFICULTY — values come directly from CO2_PRESETS / O2_PRESETS -->
+        <div class="section-label-row">
+          <span class="section-label">${msg('Difficulty')}</span>
+          <button
+            class="info-btn ${this._showDiffTooltip ? 'active' : ''}"
+            @click=${() => { this._showDiffTooltip = !this._showDiffTooltip; }}
+            aria-label="Difficulty info"
+          >${iconInfo}</button>
+        </div>
+        ${this._showDiffTooltip ? html`
+          <div class="info-tooltip">${this._renderDiffTooltip()}</div>
+        ` : ''}
         <div class="difficulty-row">
           ${(['easy', 'normal', 'hard'] as Difficulty[]).map(
             (d) => html`
@@ -475,80 +619,60 @@ export class AppTableSetup extends LitElement {
           )}
         </div>
 
-        <div class="section-label">${msg('Rounds')}</div>
-        <div class="difficulty-row">
-          <button
-            class="diff-btn ${this._roundCount === 4 ? 'active' : ''}"
-            @click=${() => this._setRoundCount(4)}
-          >
-            ${msg('Quick (4)')}
-          </button>
-          <button
-            class="diff-btn ${this._roundCount === 8 ? 'active' : ''}"
-            @click=${() => this._setRoundCount(8)}
-          >
-            ${msg('Full (8)')}
-          </button>
-          <button
-            class="diff-btn ${this._roundCount === 'custom' ? 'active' : ''}"
-            @click=${() => this._setRoundCount('custom')}
-          >
-            ${msg('Custom')}${this._roundCount === 'custom'
-              ? html`<input
-                  class="custom-rounds-input"
-                  type="number"
-                  inputmode="numeric"
-                  min="2"
-                  max="8"
-                  .value=${String(this._customRounds)}
-                  @click=${(e: Event) => e.stopPropagation()}
-                  @change=${(e: Event) =>
-                    this._setCustomRounds((e.target as HTMLInputElement).value)}
-                />`
-              : ''}
-          </button>
+        <!-- ROUNDS — single slider from 2 to 8 -->
+        <div class="section-label" style="margin-bottom:var(--spacing-xs)">${msg('Rounds')}</div>
+        <div class="rounds-slider-row">
+          <div class="rounds-slider-header">
+            <span class="rounds-ends">2</span>
+            <span class="rounds-current">${this._rounds} ${msg('rounds')}</span>
+            <span class="rounds-ends">8</span>
+          </div>
+          <input
+            class="rounds-slider"
+            type="range"
+            min="2"
+            max="8"
+            step="1"
+            .value=${String(this._rounds)}
+            @input=${(e: Event) =>
+              this._setRounds(parseInt((e.target as HTMLInputElement).value, 10))}
+          />
         </div>
 
+        <!-- TABLE — header shows symbol + label per column; data rows show time only.
+             Both use the same 3-column grid so values align perfectly under their labels. -->
         <div class="table-container">
           <div class="table-header">
-            <span>#</span>
-            <span>${msg('Breathe')}</span>
-            <span>${msg('Hold')}</span>
+            <span class="round-num"></span>
+            <div class="col-breathe">
+              <span class="round-pill breathe">${symbolBreathe} ${msg('Breathe')}</span>
+            </div>
+            <div class="col-hold">
+              <span class="round-pill hold">${symbolHoldIn} ${msg('Hold')}</span>
+            </div>
           </div>
-          ${activeTable.map(
+
+          ${this._table.map(
             (round, i) => html`
               <div class="round-row">
                 <span class="round-num">${i + 1}</span>
-                <input
-                  class="time-input rest"
-                  type="text"
-                  inputmode="numeric"
-                  .value=${formatTime(round.rest)}
-                  @input=${this._filterTimeInput}
-                  @change=${(e: Event) => this._onTimeChange(e, i, 'rest')}
-                />
-                <input
-                  class="time-input hold"
-                  type="text"
-                  inputmode="numeric"
-                  .value=${formatTime(round.hold)}
-                  @input=${this._filterTimeInput}
-                  @change=${(e: Event) => this._onTimeChange(e, i, 'hold')}
-                />
+                <div class="col-breathe">
+                  <span class="round-pill breathe">${formatTime(round.rest)}</span>
+                </div>
+                <div class="col-hold">
+                  <span class="round-pill hold">${formatTime(round.hold)}</span>
+                </div>
               </div>
             `,
           )}
 
           <div class="total-row">
             <span class="total-label">${msg('Total Duration')}</span>
-            <span class="total-value">${formatTime(totalDuration(activeTable))}</span>
+            <span class="total-value">${formatTime(totalDuration(this._table))}</span>
           </div>
         </div>
 
         <div class="action-bar">
-          ${this._isEdited
-            ? html`<button class="btn btn-secondary" @click=${this._resetTable}>${msg('Reset')}</button>`
-            : ''}
           <button class="btn btn-primary btn-large" @click=${this._startExercise}>
             ${msg('Start Exercise')}
           </button>

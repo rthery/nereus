@@ -47,6 +47,10 @@ export interface Settings {
   customRounds: number;
   locale: LocalePreference;
   safetyAcknowledged: boolean;
+  breathingCustomPhases?: BreathingPhase[];
+  breathingDurationMode?: 'cycles' | 'minutes';
+  breathingCycles?: number;
+  breathingMinutes?: number;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -57,7 +61,7 @@ export const DEFAULT_SETTINGS: Settings = {
   co2Difficulty: 'normal',
   o2Difficulty: 'normal',
   roundCount: 8,
-  customRounds: 6,
+  customRounds: 8,
   locale: 'auto',
   safetyAcknowledged: false,
 };
@@ -106,5 +110,57 @@ export interface TimerState {
   remaining: number;
   phaseDuration: number;
   running: boolean;
+  completed: boolean;
+}
+
+// ---- Breathing Exercises ----
+
+export interface BreathingPhase {
+  label: 'inhale' | 'hold-in' | 'exhale' | 'hold-out';
+  duration: number; // seconds, 0 = disabled
+}
+
+export type BreathingPresetId =
+  | 'coherence'
+  | 'box'
+  | '4-7-8'
+  | 'apnea-prep'
+  | 'custom';
+
+export interface BreathingPreset {
+  id: BreathingPresetId;
+  name: string;
+  tip?: string;
+  phases: BreathingPhase[];
+  defaultCycles: number;
+  defaultMinutes: number;
+}
+
+export interface BreathingSessionConfig {
+  preset: BreathingPreset;
+  durationMode: 'cycles' | 'minutes';
+  totalCycles: number;
+  totalMinutes: number;
+}
+
+export interface BreathingTimerState {
+  phaseIndex: number;
+  phase: BreathingPhase;
+  cycle: number;
+  totalCycles: number;
+  elapsed: number;
+  remaining: number;
+  phaseDuration: number;
+  running: boolean;
+  completed: boolean;
+}
+
+export interface BreathingSession {
+  id: string;
+  date: number;
+  presetId: BreathingPresetId;
+  presetName: string;
+  completedCycles: number;
+  totalDuration: number; // seconds elapsed
   completed: boolean;
 }

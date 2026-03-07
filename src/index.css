@@ -4,10 +4,20 @@
   box-sizing: border-box;
 }
 
+/* Prevent text selection app-wide — gives a native app feel instead of a webpage */
+* { user-select: none; -webkit-user-select: none; }
+/* Re-enable selection inside editable fields */
+input, textarea, [contenteditable] { user-select: text; -webkit-user-select: text; }
+
 html {
   -webkit-text-size-adjust: 100%;
   -moz-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  background-color: #0a1628;
+}
+
+@media (prefers-color-scheme: light) {
+  html { background-color: #f0f4f8; }
 }
 
 body {

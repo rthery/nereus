@@ -4,7 +4,8 @@ import { localized, msg } from '@lit/localize';
 import { navigate } from '../navigation.js';
 import { iconHome, iconBarChart2, iconSettings, iconTrophy } from './icons.js';
 
-const iconDumbbell = html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14"></path><path d="M18 5v14"></path><path d="M2 9h4"></path><path d="M2 15h4"></path><path d="M18 9h4"></path><path d="M18 15h4"></path><path d="M6 9h12"></path><path d="M6 15h12"></path></svg>`;
+/** Feather "wind" icon — represents breathing / airflow, perfect for a freediving training app. */
+const iconWind = html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>`;
 
 @localized()
 @customElement('app-nav')
@@ -123,10 +124,10 @@ export class AppNav extends LitElement {
           <span class="label">${msg('Home')}</span>
         </button>
         <button
-          class=${this._isActive('/training') || this._isActive('/co2') || this._isActive('/o2') ? 'active' : ''}
+          class=${this._isActive('/training') || this._isActive('/co2') || this._isActive('/o2') || this._isActive('/breathing') || this._isActive('/breathing-timer') ? 'active' : ''}
           @click=${() => this._nav('/training')}
         >
-          <span class="icon">${iconDumbbell}</span>
+          <span class="icon">${iconWind}</span>
           <span class="label">${msg('Training')}</span>
         </button>
         <button

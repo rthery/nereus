@@ -18,7 +18,7 @@ import {
 } from '../services/vibration.js';
 import { formatTime } from '../services/tables.js';
 import { navigate } from '../navigation.js';
-import { iconCheckCircle, iconAlertTriangle } from '../components/icons.js';
+import { iconCheckCircle, iconAlertTriangle, symbolBreathe, symbolHoldIn } from '../components/icons.js';
 import type { TableRound, Phase, TimerState, TableType } from '../types.js';
 
 @localized()
@@ -30,7 +30,6 @@ export class AppTimer extends LitElement {
   @state() private _round = 0;
   @state() private _totalRounds = 0;
   @state() private _remaining = 0;
-  @state() private _phaseDuration = 0;
   @state() private _running = false;
   @state() private _completed = false;
   @state() private _soundEnabled = true;
@@ -46,6 +45,8 @@ export class AppTimer extends LitElement {
 
   private _engine: TimerEngine | null = null;
   private _wakeLock: WakeLockSentinel | null = null;
+  private _rafId: number | null = null;
+  private static readonly _circumference = 2 * Math.PI * 120;
 
   static styles = [
     sharedStyles,
@@ -101,11 +102,23 @@ export class AppTimer extends LitElement {
       }
 
       .phase-label {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
         font-size: var(--font-xl);
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.1em;
       }
+
+      .phase-label .sym {
+        display: flex;
+        align-items: center;
+        width: 20px;
+        height: 20px;
+      }
+
+      .phase-label .sym svg { width: 100%; height: 100%; }
 
       .phase-label.breathe { color: var(--color-breathe); }
       .phase-label.hold { color: var(--color-hold); }
@@ -132,7 +145,7 @@ export class AppTimer extends LitElement {
         fill: none;
         stroke-width: 6;
         stroke-linecap: round;
-        transition: stroke-dashoffset 100ms linear;
+        /* No CSS transition — rAF drives stroke-dashoffset directly for smooth 60fps */
       }
 
       .timer-ring-progress.breathe { stroke: var(--color-breathe); }
@@ -404,6 +417,7 @@ export class AppTimer extends LitElement {
     super.disconnectedCallback();
     this._engine?.destroy();
     this._releaseWakeLock();
+    this._stopRaf();
   }
 
   private async _loadSettings(): Promise<void> {
@@ -427,6 +441,28 @@ export class AppTimer extends LitElement {
     this._wakeLock = null;
   }
 
+  // ---- rAF animation loop: directly updates ring stroke-dashoffset at 60fps ----
+  private _startRaf(): void {
+    const C = AppTimer._circumference;
+    const frame = () => {
+      if (!this._engine) { this._rafId = null; return; }
+      const s = this._engine.state;
+      const progress = s.phaseDuration > 0 ? Math.min(s.elapsed / s.phaseDuration, 1) : 0;
+      const dashOffset = C * (1 - progress);
+      const ring = this.shadowRoot?.querySelector<SVGCircleElement>('.timer-ring-progress');
+      if (ring) ring.setAttribute('stroke-dashoffset', dashOffset.toFixed(1));
+      this._rafId = requestAnimationFrame(frame);
+    };
+    this._rafId = requestAnimationFrame(frame);
+  }
+
+  private _stopRaf(): void {
+    if (this._rafId !== null) {
+      cancelAnimationFrame(this._rafId);
+      this._rafId = null;
+    }
+  }
+
   private _start(): void {
     if (!this.tableData) return;
 
@@ -438,7 +474,6 @@ export class AppTimer extends LitElement {
       table: this.tableData.table,
       onTick: (s: TimerState) => {
         this._remaining = s.remaining;
-        this._phaseDuration = s.phaseDuration;
         this._running = s.running;
       },
       onPhaseChange: (phase: Phase, round: number) => {
@@ -459,6 +494,7 @@ export class AppTimer extends LitElement {
       },
       onComplete: () => {
         this._completed = true;
+        this._stopRaf();
         if (this._soundEnabled) playCompleteChime();
         if (this._vibrationEnabled) vibrateComplete();
         this._releaseWakeLock();
@@ -468,8 +504,8 @@ export class AppTimer extends LitElement {
 
     this._totalRounds = this.tableData.table.length;
     this._remaining = this.tableData.table[0].rest;
-    this._phaseDuration = this.tableData.table[0].rest;
     this._engine.start();
+    this._startRaf();
   }
 
   private _togglePause(): void {
@@ -477,9 +513,11 @@ export class AppTimer extends LitElement {
     if (this._running) {
       this._engine.stop();
       this._running = false;
+      this._stopRaf();
     } else {
       this._engine.resume();
       this._running = true;
+      this._startRaf();
     }
   }
 
@@ -488,6 +526,7 @@ export class AppTimer extends LitElement {
     this._completed = true;
     this._running = false;
     this._releaseWakeLock();
+    this._stopRaf();
     this._saveSession(false);
   }
 
@@ -497,6 +536,7 @@ export class AppTimer extends LitElement {
     this._completed = true;
     this._running = false;
     this._releaseWakeLock();
+    this._stopRaf();
     void this._saveSession(true);
   }
 
@@ -612,12 +652,7 @@ export class AppTimer extends LitElement {
       `;
     }
 
-    const circumference = 2 * Math.PI * 120;
-    const progress =
-      this._phaseDuration > 0
-        ? (this._phaseDuration - this._remaining) / this._phaseDuration
-        : 0;
-    const dashOffset = circumference * (1 - progress);
+    const circumference = AppTimer._circumference;
 
     return html`
       <div class="timer-page ${this._phase}">
@@ -631,6 +666,7 @@ export class AppTimer extends LitElement {
 
         <div class="timer-center">
           <div class="phase-label ${this._phase}">
+            <span class="sym">${this._phase === 'breathe' ? symbolBreathe : symbolHoldIn}</span>
             ${this._phase === 'breathe' ? msg('Breathe') : msg('Hold')}
           </div>
 
@@ -643,7 +679,7 @@ export class AppTimer extends LitElement {
                 cy="130"
                 r="120"
                 stroke-dasharray=${circumference}
-                stroke-dashoffset=${dashOffset}
+                stroke-dashoffset=${circumference}
               />
             </svg>
             <div class="timer-text">${this._formatRemaining(this._remaining)}</div>

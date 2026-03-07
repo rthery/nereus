@@ -53,13 +53,17 @@ export class TimerEngine {
     const currentRound = this.table[this._round];
     const phaseDuration =
       this._phase === 'breathe' ? currentRound.rest : currentRound.hold;
-    const remaining = Math.max(phaseDuration - this._elapsed, 0);
+    // Compute live elapsed when running so rAF callers get 60fps precision
+    const elapsed = this._running
+      ? Math.min((performance.now() - this.phaseStartTimestamp) / 1000, phaseDuration)
+      : this._elapsed;
+    const remaining = Math.max(phaseDuration - elapsed, 0);
 
     return {
       phase: this._phase,
       round: this._round,
       totalRounds: this.table.length,
-      elapsed: this._elapsed,
+      elapsed,
       remaining: Math.ceil(remaining),
       phaseDuration,
       running: this._running,

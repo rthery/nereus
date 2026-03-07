@@ -69,7 +69,7 @@
 </trans-unit>
 <trans-unit id="sdb63fccb4347e06e">
   <source>Track Your Freediving Journey</source>
-  <target>Suivez votre parcours en apn&#233;e</target>
+  <target>Suivez votre parcours en apnée</target>
 
 </trans-unit>
 <trans-unit id="sd190523b76b66298">
@@ -348,14 +348,6 @@
   <source>Rounds</source>
   <target>Cycles</target>
 </trans-unit>
-<trans-unit id="s3ece49ff2e9eb0ab">
-  <source>Quick (4)</source>
-  <target>Rapide (4)</target>
-</trans-unit>
-<trans-unit id="s3af52ee108d901b7">
-  <source>Full (8)</source>
-  <target>Complet (8)</target>
-</trans-unit>
 <trans-unit id="sf0cab2483f66aa2e">
   <source>Custom</source>
   <target>Personnalisé</target>
@@ -371,10 +363,6 @@
 <trans-unit id="sbf09a5e18ba2bb33">
   <source>Total Duration</source>
   <target>Durée totale</target>
-</trans-unit>
-<trans-unit id="s255857544a9d5ec0">
-  <source>Reset</source>
-  <target>Réinitialiser</target>
 </trans-unit>
 <trans-unit id="sc81939bfebc2dd03">
   <source>Start Exercise</source>
@@ -652,6 +640,138 @@
 <trans-unit id="s9352a4c7b95b0b8e">
   <source>Try a <x id="0" equiv-text="${this._suggestedType!.toUpperCase()}"/> session today</source>
   <target>Essayez une séance <x id="0" equiv-text="${this._suggestedType!.toUpperCase()}"/> aujourd'hui</target>
+</trans-unit>
+<trans-unit id="s5a0acae794004bfe">
+  <source>Inhale</source>
+  <target>Inspirez</target>
+</trans-unit>
+<trans-unit id="s8fb666e0ad23b058">
+  <source>Exhale</source>
+  <target>Expirez</target>
+</trans-unit>
+<trans-unit id="s7cd7aa6578a69dab">
+  <source>Program</source>
+  <target>Programme</target>
+</trans-unit>
+<trans-unit id="s46e670f93e615b51">
+  <source>cycle</source>
+  <target>cycle</target>
+</trans-unit>
+<trans-unit id="s92921878e886e36d">
+  <source>Duration</source>
+  <target>Durée</target>
+</trans-unit>
+<trans-unit id="sbfefec98d6c617a6">
+  <source>Cycles</source>
+  <target>Cycles</target>
+</trans-unit>
+<trans-unit id="see0ec27fb03d880e">
+  <source>Minutes</source>
+  <target>Minutes</target>
+</trans-unit>
+<trans-unit id="sdaed1984ff6ddac6">
+  <source>cycles</source>
+  <target>cycles</target>
+</trans-unit>
+<trans-unit id="scbeff7c3e03228ae">
+  <source>minutes</source>
+  <target>minutes</target>
+</trans-unit>
+<trans-unit id="sae1c7f13b7c0c47f">
+  <source>Start</source>
+  <target>Démarrer</target>
+</trans-unit>
+<trans-unit id="sc63dee33bff730c6">
+  <source>No session configured</source>
+  <target>Aucune session configurée</target>
+</trans-unit>
+<trans-unit id="s575e795c45e2d97e">
+  <source>Go back</source>
+  <target>Retour</target>
+</trans-unit>
+<trans-unit id="s7d15d2dac95778b8">
+  <source><x id="0" equiv-text="${totalCycles}"/> cycles</source>
+  <target><x id="0" equiv-text="${totalCycles}"/> cycles</target>
+</trans-unit>
+<trans-unit id="s44add38a493e53a5">
+  <source><x id="0" equiv-text="${totalMinutes}"/> min</source>
+  <target><x id="0" equiv-text="${totalMinutes}"/> min</target>
+</trans-unit>
+<trans-unit id="s771e167cd02ed564">
+  <source>Find a comfortable position. Breathe naturally and relax.</source>
+  <target>Trouvez une position confortable. Respirez naturellement et détendez-vous.</target>
+</trans-unit>
+<trans-unit id="sb072deb469d3cad2">
+  <source>Session Complete</source>
+  <target>Séance terminée</target>
+</trans-unit>
+<trans-unit id="s1b6c707851ddc5ac">
+  <source>Cycle <x id="0" equiv-text="${this._cycle}"/> / <x id="1" equiv-text="${totalCycles}"/></source>
+  <target>Cycle <x id="0" equiv-text="${this._cycle}"/> / <x id="1" equiv-text="${totalCycles}"/></target>
+</trans-unit>
+<trans-unit id="saf14fc12536e5af2">
+  <source>Breathing Exercises</source>
+  <target>Exercices respiratoires</target>
+</trans-unit>
+<trans-unit id="s7cf9fda6d32e50b0">
+  <source>Box Breathing</source>
+  <target>Respiration carrée</target>
+</trans-unit>
+<trans-unit id="s5dd12f8b7981d806">
+  <source><x id="0" equiv-text="${Math.max(0, this._cycle - 1)}"/> / <x id="1" equiv-text="${totalCycles}"/></source>
+  <target><x id="0" equiv-text="${Math.max(0, this._cycle - 1)}"/> / <x id="1" equiv-text="${totalCycles}"/></target>
+</trans-unit>
+<trans-unit id="sdd7ca9d5c4dd43f1">
+  <source>Breathing</source>
+  <target>Respiration</target>
+</trans-unit>
+<trans-unit id="s344861448b65d86f">
+  <source>Guided breathing exercises for relaxation and freediving preparation. Choose a preset pattern and let the animated timer pace your breath.</source>
+  <target>Exercices de respiration guidés pour la relaxation et la préparation à l'apnée. Choisissez un programme et laissez le minuteur animé guider votre rythme.</target>
+</trans-unit>
+<trans-unit id="s483d9e6c1ccd1f9b">
+  <source>Easy</source>
+  <target>Facile</target>
+</trans-unit>
+<trans-unit id="s9ff3121d30f88d52">
+  <source>Normal</source>
+  <target>Normal</target>
+</trans-unit>
+<trans-unit id="s58c7b5d87587287c">
+  <source>Hard</source>
+  <target>Difficile</target>
+</trans-unit>
+<trans-unit id="s390ab6bd513007f8">
+  <source>Rest decreases by 10 s each round.</source>
+  <target>Le repos diminue de 10 s à chaque tour.</target>
+</trans-unit>
+<trans-unit id="s311418469f09741b">
+  <source>round</source>
+  <target>tour</target>
+</trans-unit>
+<trans-unit id="s8ebd0a6d64406c23">
+  <source>Hold increases each round. Rest is constant per level.</source>
+  <target>L'apnée augmente à chaque tour. Le repos est constant par niveau.</target>
+</trans-unit>
+<trans-unit id="s6e99a8003d10ccb8">
+  <source>rounds</source>
+  <target>tours</target>
+</trans-unit>
+<trans-unit id="s01d54d8e152c8f65">
+  <source>Coherent Breathing</source>
+  <target>Respiration cohérente</target>
+</trans-unit>
+<trans-unit id="s9fdd0a8815bd2738">
+  <source>4-7-8 Breath</source>
+  <target>Respiration 4-7-8</target>
+</trans-unit>
+<trans-unit id="s7c1e42c63e39282d">
+  <source>Freediving Prep</source>
+  <target>Préparation apnée</target>
+</trans-unit>
+<trans-unit id="breathing-hold">
+  <source>Hold</source>
+  <target>Pause</target>
 </trans-unit>
 </body>
 </file>

@@ -6,24 +6,27 @@ import {
   getSessions,
   getPBHistory,
   getCompetitions,
+  getBreathingSessions,
   deleteSession,
   deletePBRecord,
   deleteCompetition,
+  deleteBreathingSession,
   savePB,
 } from '../services/db.js';
 import { formatTime } from '../services/tables.js';
 import { formatDisciplineValue } from '../services/disciplines.js';
-import { iconX, iconTrophy, iconEdit } from '../components/icons.js';
+import { iconX, iconTrophy, iconEdit, symbolInhale, symbolExhale } from '../components/icons.js';
 import { getLocale } from '../localization.js';
 import { navigate } from '../navigation.js';
-import type { Session, PBRecord, Competition } from '../types.js';
+import type { Session, PBRecord, Competition, BreathingSession } from '../types.js';
 
-type FilterType = 'all' | 'training' | 'competitions' | 'pb';
+type FilterType = 'all' | 'training' | 'breathing' | 'competitions' | 'pb';
 
 type TimelineEntry =
   | { kind: 'session'; date: number; data: Session }
   | { kind: 'pb'; date: number; data: PBRecord }
-  | { kind: 'competition'; date: number; data: Competition };
+  | { kind: 'competition'; date: number; data: Competition }
+  | { kind: 'breathing'; date: number; data: BreathingSession };
 
 @localized()
 @customElement('app-history')
@@ -31,6 +34,7 @@ export class AppHistory extends LitElement {
   @state() private _sessions: Session[] = [];
   @state() private _pbHistory: PBRecord[] = [];
   @state() private _competitions: Competition[] = [];
+  @state() private _breathingSessions: BreathingSession[] = [];
   @state() private _filter: FilterType = 'all';
   @state() private _editingPBDate: number | null = null;
   @state() private _editPBMin = 0;
@@ -55,7 +59,7 @@ export class AppHistory extends LitElement {
 
       .stats-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
         gap: var(--spacing-md);
         margin-bottom: var(--spacing-lg);
       }
@@ -152,6 +156,7 @@ export class AppHistory extends LitElement {
       .timeline-entry.session-co2::before { background: var(--color-hold); }
       .timeline-entry.session-o2::before { background: var(--color-breathe); }
       .timeline-entry.session-pb::before { background: var(--color-accent); }
+      .timeline-entry.breathing::before { background: var(--color-breathe); opacity: 0.7; }
       .timeline-entry.competition::before {
         background: var(--color-accent);
         width: 12px;
@@ -421,11 +426,20 @@ export class AppHistory extends LitElement {
   }
 
   private async _load(): Promise<void> {
-    [this._sessions, this._pbHistory, this._competitions] = await Promise.all([
+    const [sessions, pbHistory, competitions] = await Promise.all([
       getSessions(100),
       getPBHistory(),
       getCompetitions(100),
     ]);
+    this._sessions = sessions;
+    this._pbHistory = pbHistory;
+    this._competitions = competitions;
+    // Guard against old IndexedDB versions that don't have the breathing-sessions store yet
+    try {
+      this._breathingSessions = await getBreathingSessions(100);
+    } catch {
+      this._breathingSessions = [];
+    }
   }
 
   private get _timeline(): TimelineEntry[] {
@@ -433,6 +447,7 @@ export class AppHistory extends LitElement {
       ...this._sessions.map((s): TimelineEntry => ({ kind: 'session', date: s.date, data: s })),
       ...this._pbHistory.map((p): TimelineEntry => ({ kind: 'pb', date: p.date, data: p })),
       ...this._competitions.map((c): TimelineEntry => ({ kind: 'competition', date: c.date, data: c })),
+      ...this._breathingSessions.map((b): TimelineEntry => ({ kind: 'breathing', date: b.date, data: b })),
     ];
     return entries.sort((a, b) => b.date - a.date);
   }
@@ -441,6 +456,7 @@ export class AppHistory extends LitElement {
     const all = this._timeline;
     if (this._filter === 'all') return all;
     if (this._filter === 'training') return all.filter((e) => e.kind === 'session');
+    if (this._filter === 'breathing') return all.filter((e) => e.kind === 'breathing');
     if (this._filter === 'competitions') return all.filter((e) => e.kind === 'competition');
     if (this._filter === 'pb') return all.filter((e) => e.kind === 'pb');
     return all;
@@ -459,6 +475,11 @@ export class AppHistory extends LitElement {
   private _editCompetition(id: string): void {
     sessionStorage.setItem('competitions:editId', id);
     navigate('/competitions');
+  }
+
+  private async _deleteBreathingSession(id: string): Promise<void> {
+    await deleteBreathingSession(id);
+    await this._load();
   }
 
   private async _deletePB(date: number): Promise<void> {
@@ -536,6 +557,42 @@ export class AppHistory extends LitElement {
                   </div>
                 </div>
               `}
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderBreathingSession(b: BreathingSession) {
+    return html`
+      <div class="session-card">
+        <div class="card-top">
+          <div>
+            <span class="session-type" style="color:var(--color-breathe);display:inline-flex;align-items:center;gap:4px">
+              <span style="display:inline-flex;gap:2px;align-items:center">${symbolInhale}${symbolExhale}</span>
+              ${msg('Breathing')}
+            </span>
+            <span class="session-status ${b.completed ? 'completed' : 'incomplete'}">
+              ${b.completed ? msg('Completed') : msg('Stopped')}
+            </span>
+          </div>
+          <button class="delete-btn" @click=${() => this._deleteBreathingSession(b.id)}>
+            ${iconX}
+          </button>
+        </div>
+        <div class="card-date">${this._formatDate(b.date)}</div>
+        <div class="card-details">
+          <div>
+            <div class="detail-label">${msg('Program')}</div>
+            <div class="detail-value">${b.presetName}</div>
+          </div>
+          <div>
+            <div class="detail-label">${msg('Cycles')}</div>
+            <div class="detail-value">${b.completedCycles}</div>
+          </div>
+          <div>
+            <div class="detail-label">${msg('Duration')}</div>
+            <div class="detail-value">${formatTime(b.totalDuration)}</div>
+          </div>
         </div>
       </div>
     `;
@@ -623,6 +680,8 @@ export class AppHistory extends LitElement {
       typeClass = `session-${s.type}`;
     } else if (entry.kind === 'competition') {
       typeClass = 'competition';
+    } else if (entry.kind === 'breathing') {
+      typeClass = 'breathing';
     }
 
     return html`
@@ -631,6 +690,8 @@ export class AppHistory extends LitElement {
           ? this._renderSession(entry.data as Session)
           : entry.kind === 'pb'
           ? this._renderPB(entry.data as PBRecord)
+          : entry.kind === 'breathing'
+          ? this._renderBreathingSession(entry.data as BreathingSession)
           : this._renderCompetition(entry.data as Competition)}
       </div>
     `;
@@ -651,6 +712,10 @@ export class AppHistory extends LitElement {
             <div class="stat-label">${msg('Sessions')}</div>
           </div>
           <div class="stat-card">
+            <div class="stat-value">${this._breathingSessions.length}</div>
+            <div class="stat-label">${msg('Breathing')}</div>
+          </div>
+          <div class="stat-card">
             <div class="stat-value">${totalComps}</div>
             <div class="stat-label">${msg('Competitions')}</div>
           </div>
@@ -669,6 +734,10 @@ export class AppHistory extends LitElement {
             class="tab-btn ${this._filter === 'training' ? 'active' : ''}"
             @click=${() => { this._filter = 'training'; }}
           >${msg('Training')}</button>
+          <button
+            class="tab-btn ${this._filter === 'breathing' ? 'active' : ''}"
+            @click=${() => { this._filter = 'breathing'; }}
+          >${msg('Breathing')}</button>
           <button
             class="tab-btn ${this._filter === 'competitions' ? 'active' : ''}"
             @click=${() => { this._filter = 'competitions'; }}

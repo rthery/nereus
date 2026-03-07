@@ -1,21 +1,21 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { localized, msg, str } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { sharedStyles } from '../styles/theme.js';
-import { getSettings, getSessions, getCompetitions } from '../services/db.js';
+import { getSettings, getSessions } from '../services/db.js';
 import { formatTime } from '../services/tables.js';
 import { navigate } from '../navigation.js';
 import { getLocale } from '../localization.js';
-import { iconTrophy, iconNereus } from '../components/icons.js';
-import type { Session, Competition } from '../types.js';
+import { iconNereus } from '../components/icons.js';
+import type { Session } from '../types.js';
 
 @localized()
 @customElement('app-home')
 export class AppHome extends LitElement {
   @state() private _pb = 0;
   @state() private _recentSessions: Session[] = [];
-  @state() private _recentCompetitions: Competition[] = [];
   @state() private _suggestedType: 'co2' | 'o2' | null = null;
+  @state() private _trainedToday = false;
 
   static styles = [
     sharedStyles,
@@ -69,7 +69,6 @@ export class AppHome extends LitElement {
         background: var(--color-bg-surface);
         border-radius: var(--radius-lg);
         padding: var(--spacing-md) var(--spacing-lg);
-        text-align: center;
         margin-bottom: var(--spacing-md);
         border: 1px solid var(--color-border);
         display: flex;
@@ -118,90 +117,69 @@ export class AppHome extends LitElement {
         flex-shrink: 0;
       }
 
-      .suggestion-chip {
+      .cta-card {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: var(--spacing-sm) var(--spacing-md);
+        padding: var(--spacing-md) var(--spacing-lg);
         background: var(--color-accent-subtle);
         border: 1px solid rgba(99, 179, 237, 0.4);
         border-radius: var(--radius-md);
-        margin-bottom: var(--spacing-md);
-        cursor: pointer;
-        font-size: var(--font-sm);
-        font-weight: 600;
-        color: var(--color-accent);
-        transition: background var(--transition-fast);
-        -webkit-tap-highlight-color: transparent;
-      }
-
-      .suggestion-chip:hover {
-        background: rgba(99, 179, 237, 0.15);
-      }
-
-      .suggestion-arrow {
-        font-size: var(--font-lg);
-        line-height: 1;
-      }
-
-      .actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: var(--spacing-md);
         margin-bottom: var(--spacing-xl);
-      }
-
-      .action-card {
-        background: var(--color-bg-surface);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-md);
-        padding: var(--spacing-lg);
         cursor: pointer;
         transition: background var(--transition-fast), transform var(--transition-fast);
         -webkit-tap-highlight-color: transparent;
-        text-align: left;
+        gap: var(--spacing-md);
       }
 
-      .action-card:hover {
-        background: var(--color-bg-surface-hover);
+      .cta-card:hover {
+        background: rgba(99, 179, 237, 0.15);
       }
 
-      .action-card:active {
+      .cta-card:active {
         transform: scale(0.98);
       }
 
-      .action-card.co2 {
-        border-left: 3px solid var(--color-hold);
+      .cta-card.done {
+        background: rgba(102, 187, 106, 0.08);
+        border-color: rgba(102, 187, 106, 0.3);
+        cursor: default;
       }
 
-      .action-card.o2 {
-        border-left: 3px solid var(--color-breathe);
+      .cta-card.done:hover,
+      .cta-card.done:active {
+        background: rgba(102, 187, 106, 0.08);
+        transform: none;
       }
 
-      .action-card.pb {
-        grid-column: 1 / -1;
-        border-left: 3px solid var(--color-accent);
-      }
-
-      .action-card.competitions {
-        grid-column: 1 / -1;
-        border-left: 3px solid var(--color-accent);
-      }
-
-      .action-title {
-        font-size: var(--font-lg);
+      .cta-title {
+        font-size: var(--font-base);
         font-weight: 700;
-        color: var(--color-text-primary);
-        margin-bottom: var(--spacing-xs);
+        color: var(--color-accent);
+        margin-bottom: 2px;
       }
 
-      .action-desc {
+      .cta-card.done .cta-title {
+        color: var(--color-success);
+      }
+
+      .cta-sub {
         font-size: var(--font-sm);
         color: var(--color-text-secondary);
-        line-height: 1.4;
       }
 
-      .recent-header {
+      .cta-arrow {
+        font-size: var(--font-lg);
+        color: var(--color-accent);
+        line-height: 1;
+        flex-shrink: 0;
+      }
+
+      .cta-card.done .cta-arrow {
+        color: var(--color-success);
+      }
+
+      .section-header {
         font-size: var(--font-sm);
         font-weight: 600;
         color: var(--color-text-muted);
@@ -214,88 +192,47 @@ export class AppHome extends LitElement {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: var(--spacing-md);
+        padding: var(--spacing-sm) var(--spacing-md);
         background: var(--color-bg-surface);
         border-radius: var(--radius-sm);
-        margin-bottom: var(--spacing-sm);
+        margin-bottom: var(--spacing-xs);
         border: 1px solid var(--color-border);
       }
 
-      .session-type {
-        font-weight: 600;
-        font-size: var(--font-sm);
-        text-transform: uppercase;
+      .session-left {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
       }
 
-      .session-type.co2 { color: var(--color-hold); }
-      .session-type.o2 { color: var(--color-breathe); }
-      .session-type.pb-test { color: var(--color-accent); }
+      .session-type-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: var(--radius-full);
+        flex-shrink: 0;
+      }
+
+      .session-type-dot.co2 { background: var(--color-hold); }
+      .session-type-dot.o2 { background: var(--color-breathe); }
+      .session-type-dot.pb-test { background: var(--color-accent); }
+
+      .session-name {
+        font-weight: 600;
+        font-size: var(--font-sm);
+        color: var(--color-text-primary);
+      }
+
+      .session-detail {
+        font-size: var(--font-xs);
+        color: var(--color-text-muted);
+        margin-top: 1px;
+      }
 
       .session-date {
         font-size: var(--font-xs);
         color: var(--color-text-muted);
-      }
-
-      .session-status {
-        font-size: var(--font-xs);
-        padding: 2px 8px;
-        border-radius: var(--radius-full);
-        font-weight: 600;
-      }
-
-      .session-status.completed {
-        background: rgba(102, 187, 106, 0.15);
-        color: var(--color-success);
-      }
-
-      .session-status.incomplete {
-        background: rgba(255, 152, 0, 0.15);
-        color: var(--color-hold);
-      }
-
-      .comp-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: var(--spacing-md);
-        background: var(--color-bg-surface);
-        border-radius: var(--radius-sm);
-        margin-bottom: var(--spacing-sm);
-        border: 1px solid var(--color-border);
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
-      }
-
-      .comp-item:hover { background: var(--color-bg-surface-hover); }
-
-      .comp-item-left {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-        min-width: 0;
-      }
-
-      .comp-icon {
-        color: var(--color-accent);
+        text-align: right;
         flex-shrink: 0;
-        display: flex;
-        align-items: center;
-      }
-
-      .comp-icon svg { width: 16px; height: 16px; }
-
-      .comp-name {
-        font-weight: 600;
-        font-size: var(--font-sm);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .comp-count {
-        font-size: var(--font-xs);
-        color: var(--color-text-muted);
-        white-space: nowrap;
       }
 
       .empty-state {
@@ -313,24 +250,20 @@ export class AppHome extends LitElement {
   }
 
   private async _load(): Promise<void> {
-    const [settings, sessions, competitions] = await Promise.all([
+    const [settings, sessions] = await Promise.all([
       getSettings(),
       getSessions(5),
-      getCompetitions(3),
     ]);
     this._pb = settings.personalBest;
     this._recentSessions = sessions;
-    this._recentCompetitions = competitions;
 
-    // Suggest the opposite of the most recent completed training session,
-    // but only if the user hasn't already trained today (same-day rule).
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
-    const trainedToday = sessions.some(
+    this._trainedToday = sessions.some(
       (s) => s.completed && (s.type === 'co2' || s.type === 'o2') && s.date >= todayStart.getTime(),
     );
 
-    if (!trainedToday && settings.personalBest > 0) {
+    if (!this._trainedToday && settings.personalBest > 0) {
       const lastTraining = sessions.find(
         (s) => s.completed && (s.type === 'co2' || s.type === 'o2'),
       );
@@ -347,6 +280,66 @@ export class AppHome extends LitElement {
       hour: '2-digit',
       minute: '2-digit',
     });
+  }
+
+  private _renderCTA() {
+    if (this._pb === 0) {
+      return html`
+        <div class="cta-card" @click=${() => navigate('/pb-test')}>
+          <div>
+            <div class="cta-title">${msg('Set your personal best')}</div>
+            <div class="cta-sub">${msg('Required to calibrate your training tables')}</div>
+          </div>
+          <span class="cta-arrow">→</span>
+        </div>
+      `;
+    }
+
+    if (this._trainedToday) {
+      return html`
+        <div class="cta-card done" @click=${() => navigate('/history')}>
+          <div>
+            <div class="cta-title">${msg('Training done for today')}</div>
+            <div class="cta-sub">${msg('View session history')}</div>
+          </div>
+          <span class="cta-arrow">→</span>
+        </div>
+      `;
+    }
+
+    if (this._suggestedType === 'co2') {
+      return html`
+        <div class="cta-card" @click=${() => navigate('/co2')}>
+          <div>
+            <div class="cta-title">${msg('CO2 session today')}</div>
+            <div class="cta-sub">${msg('Decreasing rest to build CO2 tolerance')}</div>
+          </div>
+          <span class="cta-arrow">→</span>
+        </div>
+      `;
+    }
+
+    if (this._suggestedType === 'o2') {
+      return html`
+        <div class="cta-card" @click=${() => navigate('/o2')}>
+          <div>
+            <div class="cta-title">${msg('O2 session today')}</div>
+            <div class="cta-sub">${msg('Increasing holds to push your hypoxia threshold')}</div>
+          </div>
+          <span class="cta-arrow">→</span>
+        </div>
+      `;
+    }
+
+    return html`
+      <div class="cta-card" @click=${() => navigate('/training')}>
+        <div>
+          <div class="cta-title">${msg('Start training')}</div>
+          <div class="cta-sub">${msg('CO2, O2 tables and breathwork')}</div>
+        </div>
+        <span class="cta-arrow">→</span>
+      </div>
+    `;
   }
 
   render() {
@@ -368,77 +361,39 @@ export class AppHome extends LitElement {
               : html`<div class="pb-value empty">${msg('Not set yet')}</div>`}
           </div>
           <button class="pb-action" @click=${() => navigate('/pb-test')}>
-            ${this._pb > 0 ? msg('Retest PB') : msg('Take PB Test')}
+            ${this._pb > 0 ? msg('Retest') : msg('Take test')}
           </button>
         </div>
 
-        ${this._suggestedType ? html`
-          <div class="suggestion-chip" @click=${() => navigate(`/${this._suggestedType}`)}>
-            <span>${msg(str`Try a ${this._suggestedType!.toUpperCase()} session today`)}</span>
-            <span class="suggestion-arrow">→</span>
-          </div>
-        ` : ''}
-
-        <div class="actions">
-          <div class="action-card co2" @click=${() => navigate('/co2')}>
-            <div class="action-title">${msg('CO2 Table')}</div>
-            <div class="action-desc">${msg('Build hypercapnia tolerance with decreasing rest intervals')}</div>
-          </div>
-          <div class="action-card o2" @click=${() => navigate('/o2')}>
-            <div class="action-title">${msg('O2 Table')}</div>
-            <div class="action-desc">${msg('Train hypoxia resistance with increasing hold times')}</div>
-          </div>
-          <div class="action-card competitions" @click=${() => navigate('/competitions')}>
-            <div class="action-title">${msg('Competitions')}</div>
-            <div class="action-desc">${msg('Track your competition results and see your progress per discipline')}</div>
-          </div>
-          ${this._pb === 0 ? html`
-            <div class="action-card pb" @click=${() => navigate('/pb-test')}>
-              <div class="action-title">${msg('PB Test')}</div>
-              <div class="action-desc">${msg('Guided determination exercise to measure your max breath hold')}</div>
-            </div>
-          ` : ''}
-        </div>
+        ${this._renderCTA()}
 
         ${this._recentSessions.length > 0
           ? html`
-              <div class="recent-header">${msg('Recent Sessions')}</div>
-              ${this._recentSessions.map(
-                (s) => html`
+              <div class="section-header">${msg('Recent')}</div>
+              ${this._recentSessions.slice(0, 3).map((s) => {
+                const completedRounds = s.rounds.filter((r) => r.completed).length;
+                const totalRounds = s.rounds.length;
+                return html`
                   <div class="session-item">
-                    <div>
-                      <span class="session-type ${s.type}">${s.type.toUpperCase()}</span>
-                      <div class="session-date">${this._formatDate(s.date)}</div>
+                    <div class="session-left">
+                      <span class="session-type-dot ${s.type}"></span>
+                      <div>
+                        <div class="session-name">
+                          ${s.type === 'pb-test' ? msg('PB Test') : s.type.toUpperCase()}
+                        </div>
+                        ${s.type === 'pb-test' && s.personalBest
+                          ? html`<div class="session-detail">${formatTime(s.personalBest)}</div>`
+                          : totalRounds > 0
+                            ? html`<div class="session-detail">${completedRounds}/${totalRounds} ${msg('rounds')}</div>`
+                            : ''}
+                      </div>
                     </div>
-                    <span class="session-status ${s.completed ? 'completed' : 'incomplete'}">
-                      ${s.completed ? msg('Completed') : msg('Incomplete')}
-                    </span>
+                    <div class="session-date">${this._formatDate(s.date)}</div>
                   </div>
-                `,
-              )}
+                `;
+              })}
             `
-          : ''}
-
-        ${this._recentCompetitions.length > 0
-          ? html`
-              <div class="recent-header">${msg('Recent Competitions')}</div>
-              ${this._recentCompetitions.map(
-                (c) => html`
-                  <div class="comp-item" @click=${() => navigate('/competitions')}>
-                    <div class="comp-item-left">
-                      <span class="comp-icon">${iconTrophy}</span>
-                      <span class="comp-name">${c.name}</span>
-                    </div>
-                    <span class="comp-count">${c.results.length} ${msg('disciplines')}</span>
-                  </div>
-                `,
-              )}
-            `
-          : ''}
-
-        ${this._recentSessions.length === 0 && this._recentCompetitions.length === 0
-          ? html`<div class="empty-state">${msg('No sessions yet. Start your first training!')}</div>`
-          : ''}
+          : html`<div class="empty-state">${msg('No sessions yet. Start your first training!')}</div>`}
       </div>
     `;
   }

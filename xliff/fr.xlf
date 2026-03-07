@@ -76,38 +76,6 @@
   <source>Not set yet</source>
   <target>Non défini</target>
 </trans-unit>
-<trans-unit id="s9d3f6b15516ca8b2">
-  <source>Retest PB</source>
-  <target>Retester</target>
-</trans-unit>
-<trans-unit id="sac827cbd63d65937">
-  <source>CO2 Table</source>
-  <target>Table CO2</target>
-</trans-unit>
-<trans-unit id="s985fdb03c7415180">
-  <source>O2 Table</source>
-  <target>Table O2</target>
-</trans-unit>
-<trans-unit id="s30909445030b7904">
-  <source>Train hypoxia resistance with increasing hold times</source>
-  <target>Pour renforcer la résistance à l'hypoxie avec des temps d'apnée croissants</target>
-</trans-unit>
-<trans-unit id="sbccc8526ccdad3c5">
-  <source>Guided determination exercise to measure your max breath hold</source>
-  <target>Exercice guidé pour mesurer le temps d'apnée maximum</target>
-</trans-unit>
-<trans-unit id="s447cd755737a25b7">
-  <source>Recent Sessions</source>
-  <target>Séances récentes</target>
-</trans-unit>
-<trans-unit id="s1c0a0ba9ca354f45">
-  <source>Incomplete</source>
-  <target>Incomplet</target>
-</trans-unit>
-<trans-unit id="sc4153d3a47b79357">
-  <source>No sessions yet. Start your first training!</source>
-  <target>Aucune séance enregistrée. C'est le moment de commencer !</target>
-</trans-unit>
 <trans-unit id="sb52c11c237a86135">
   <source>PB Test</source>
   <target>Test de PB</target>
@@ -364,10 +332,6 @@
   <source>Total Duration</source>
   <target>Durée totale</target>
 </trans-unit>
-<trans-unit id="sc81939bfebc2dd03">
-  <source>Start Exercise</source>
-  <target>Démarrer l'exercice</target>
-</trans-unit>
 <trans-unit id="sf3effee1d21b7746">
   <source>No table data</source>
   <target>Aucune donnée de table</target>
@@ -608,15 +572,6 @@
 <trans-unit id="s9cbc94c062c2ae88">
   <source>min : sec</source>
 <target>min : sec</target></trans-unit>
-<trans-unit id="s7be05197d4c25a67">
-  <source>Build hypercapnia tolerance with decreasing rest intervals</source>
-<target>Développer la tolérance à l'hypercapnie avec des intervalles de repos décroissants</target></trans-unit>
-<trans-unit id="sd973a4437e7c5f79">
-  <source>Track your competition results and see your progress per discipline</source>
-<target>Suivez vos résultats de compétition et visualisez votre progression par discipline</target></trans-unit>
-<trans-unit id="s90bd4083d33bf7a2">
-  <source>Recent Competitions</source>
-<target>Compétitions récentes</target></trans-unit>
 <trans-unit id="s0acdea61627d7778">
   <source>You ran a PB test less than 60 days ago. Maximum attempts should be spaced at least 2 months apart to give your body time to adapt.</source>
   <target>Vous avez effectué un test de PB il y a moins de 60 jours. Les tentatives doivent être espacées d'au moins 2 mois pour laisser le temps à votre corps de s'adapter.</target>
@@ -636,10 +591,6 @@
 <trans-unit id="s42ba4f1ce5835d0d">
   <source>You trained yesterday. Allow at least one rest day between sessions for best recovery.</source>
   <target>Vous vous êtes entraîné(e) hier. Laissez au moins un jour de repos entre les séances pour une meilleure récupération.</target>
-</trans-unit>
-<trans-unit id="s9352a4c7b95b0b8e">
-  <source>Try a <x id="0" equiv-text="${this._suggestedType!.toUpperCase()}"/> session today</source>
-  <target>Essayez une séance <x id="0" equiv-text="${this._suggestedType!.toUpperCase()}"/> aujourd'hui</target>
 </trans-unit>
 <trans-unit id="s5a0acae794004bfe">
   <source>Inhale</source>
@@ -772,6 +723,62 @@
 <trans-unit id="breathing-hold">
   <source>Hold</source>
   <target>Pause</target>
+</trans-unit>
+<trans-unit id="s75bd350b31fd8edc">
+  <source>Set your personal best</source>
+  <target>Définir votre meilleure performance</target>
+</trans-unit>
+<trans-unit id="s6aadd8f754a2e990">
+  <source>Required to calibrate your training tables</source>
+  <target>Nécessaire pour calibrer vos tables d'entraînement</target>
+</trans-unit>
+<trans-unit id="s8f121f40d92df193">
+  <source>Training done for today</source>
+  <target>Entraînement terminé pour aujourd'hui</target>
+</trans-unit>
+<trans-unit id="s73b6e5269904d14c">
+  <source>View session history</source>
+  <target>Voir l'historique des sessions</target>
+</trans-unit>
+<trans-unit id="s9b52c85b77384bc6">
+  <source>CO2 session today</source>
+  <target>Session CO2 aujourd'hui</target>
+</trans-unit>
+<trans-unit id="s6fc51e0691d1d6a9">
+  <source>O2 session today</source>
+  <target>Session O2 aujourd'hui</target>
+</trans-unit>
+<trans-unit id="s1e0afe8020901f1f">
+  <source>Start training</source>
+  <target>Commencer l'entraînement</target>
+</trans-unit>
+<trans-unit id="s0a35284f8d60fe85">
+  <source>CO2, O2 tables and breathwork</source>
+  <target>Tables CO2, O2 et exercices respiratoires</target>
+</trans-unit>
+<trans-unit id="s2a3008408e8e7cb4">
+  <source>Retest</source>
+  <target>Retester</target>
+</trans-unit>
+<trans-unit id="s5082567c012cb982">
+  <source>Take test</source>
+  <target>Faire le test</target>
+</trans-unit>
+<trans-unit id="sbce70cbdb856635e">
+  <source>Recent</source>
+  <target>Récent</target>
+</trans-unit>
+<trans-unit id="s56ed3b8a8a9591e2">
+  <source>Decreasing rest to build CO2 tolerance</source>
+  <target>Repos décroissant pour développer la tolérance au CO2</target>
+</trans-unit>
+<trans-unit id="s21633353d2dc9201">
+  <source>Increasing holds to push your hypoxia threshold</source>
+  <target>Apnées croissantes pour repousser votre seuil hypoxique</target>
+</trans-unit>
+<trans-unit id="sc4153d3a47b79357">
+  <source>No sessions yet. Start your first training!</source>
+  <target>Aucune session pour l'instant. Commencez votre premier entraînement !</target>
 </trans-unit>
 </body>
 </file>

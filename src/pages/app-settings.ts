@@ -4,7 +4,7 @@ import { localized, msg } from '@lit/localize';
 import { setLocale, detectLocale } from '../localization.js';
 import { sharedStyles } from '../styles/theme.js';
 import { iconSettings } from '../components/icons.js';
-import { getSettings, saveSettings, savePB } from '../services/db.js';
+import { clearAllData, getSettings, saveSettings, savePB } from '../services/db.js';
 import { formatTime } from '../services/tables.js';
 import type { ThemePreference, LocalePreference } from '../types.js';
 
@@ -227,6 +227,41 @@ export class AppSettings extends LitElement {
         font-size: var(--font-xs);
         margin-top: var(--spacing-xl);
       }
+
+      .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 12px;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-full);
+        background: var(--color-bg-primary);
+        color: var(--color-text-primary);
+        font-size: var(--font-xs);
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        white-space: nowrap;
+      }
+
+      .action-btn.danger {
+        background: color-mix(in srgb, var(--color-danger) 10%, var(--color-bg-primary));
+        border-color: color-mix(in srgb, var(--color-danger) 45%, var(--color-border));
+        color: var(--color-danger);
+      }
+
+      .danger-row {
+        background: color-mix(in srgb, var(--color-danger) 6%, var(--color-bg-surface));
+        border-color: color-mix(in srgb, var(--color-danger) 24%, var(--color-border));
+      }
+
+      .danger-row .setting-label {
+        color: var(--color-danger);
+      }
+
+      .danger-row .setting-desc {
+        color: var(--color-text-muted);
+      }
     `,
   ];
 
@@ -269,6 +304,18 @@ export class AppSettings extends LitElement {
   private async _toggleDeveloperMode(): Promise<void> {
     this._developerMode = !this._developerMode;
     await saveSettings({ developerMode: this._developerMode });
+  }
+
+  private async _deleteAppDataAndReload(): Promise<void> {
+    const confirmed = window.confirm(
+      'Delete all current app data, including settings and history, then reload?',
+    );
+    if (!confirmed) return;
+
+    await clearAllData();
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.reload();
   }
 
   private _startEditPb(): void {
@@ -402,7 +449,7 @@ export class AppSettings extends LitElement {
 
         ${import.meta.env.DEV ? html`
           <div class="section">
-            <div class="section-title">Debug</div>
+            <div class="section-title">Developer</div>
             <div class="setting-row">
               <div>
                 <div class="setting-label">Training debug</div>
@@ -412,6 +459,18 @@ export class AppSettings extends LitElement {
                 class="toggle ${this._developerMode ? 'on' : ''}"
                 @click=${this._toggleDeveloperMode}
               ></button>
+            </div>
+            <div class="setting-row danger-row">
+              <div>
+                <div class="setting-label">Reset app data</div>
+                <div class="setting-desc">Delete current app data and reload the app</div>
+              </div>
+              <button
+                class="action-btn danger"
+                @click=${this._deleteAppDataAndReload}
+              >
+                Reset
+              </button>
             </div>
           </div>
         ` : ''}

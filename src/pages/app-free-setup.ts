@@ -9,6 +9,8 @@ import {
   iconArrowUp,
   iconPlus,
   iconEdit,
+  iconShare2,
+  iconTrash,
   iconX,
   iconCheckCircle,
   symbolBreathe,
@@ -19,7 +21,9 @@ import {
   symbolActivity,
 } from '../components/icons.js';
 import { formatTime } from '../services/tables.js';
+import { buildFreeShareUrl, buildImportedFreePreset, takePendingSharedTraining } from '../services/training-share.js';
 import type { FreePhase, FreePhaseType, FreePreset } from '../types.js';
+import '../components/share-dialog.js';
 
 function phaseTypeLabel(type: FreePhaseType): string {
   switch (type) {
@@ -86,6 +90,10 @@ export class AppFreeSetup extends LitElement {
   @state() private _editName = '';
   @state() private _editPhases: FreePhase[] = [defaultPhase()];
   @state() private _editRounds = 1;
+  @state() private _shareDialogOpen = false;
+  @state() private _shareUrl = '';
+  @state() private _sharePresetCard: any = null;
+  @state() private _importedPresetName: string | null = null;
 
   static styles = [
     sharedStyles,
@@ -155,8 +163,10 @@ export class AppFreeSetup extends LitElement {
 
       .preset-card-actions {
         display: flex;
+        flex-wrap: wrap;
         gap: var(--spacing-sm);
         margin-top: var(--spacing-md);
+        align-items: center;
       }
 
       .preset-card-actions .btn {
@@ -164,12 +174,31 @@ export class AppFreeSetup extends LitElement {
         align-items: center;
         justify-content: center;
         gap: 6px;
-        flex: 1;
+        flex: 0 0 auto;
+        min-height: 38px;
+        padding: 9px 16px;
+        font-size: var(--font-sm);
+        white-space: nowrap;
       }
 
       .preset-card-actions .btn svg {
         width: 14px;
         height: 14px;
+      }
+
+      .preset-card-actions .btn-icon-only {
+        padding: 9px 11px;
+        min-width: 38px;
+      }
+
+      .preset-card-actions-main {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+      }
+
+      .preset-card-actions-delete {
+        margin-left: auto;
       }
 
       .phase-pills {
@@ -252,6 +281,45 @@ export class AppFreeSetup extends LitElement {
         color: var(--color-text-secondary);
         font-size: var(--font-sm);
         line-height: 1.6;
+      }
+
+      .import-banner {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: var(--spacing-md);
+        background: color-mix(in srgb, var(--color-activity) 12%, transparent);
+        border: 1px solid color-mix(in srgb, var(--color-activity) 28%, transparent);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+      }
+
+      .import-banner-title {
+        font-size: var(--font-sm);
+        font-weight: 700;
+        color: var(--color-text-primary);
+      }
+
+      .import-banner-copy {
+        color: var(--color-text-secondary);
+        font-size: var(--font-sm);
+        line-height: 1.45;
+        margin-top: 4px;
+      }
+
+      .icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-full);
+        background: transparent;
+        color: var(--color-text-secondary);
+        cursor: pointer;
       }
 
       /* ---- Editor ---- */
@@ -665,7 +733,12 @@ export class AppFreeSetup extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-    void this._loadPresets();
+    void this._initialize();
+  }
+
+  private async _initialize(): Promise<void> {
+    await this._loadPresets();
+    await this._applySharedTrainingImport();
   }
 
   private _resolveSelectedId(presets: FreePreset[], preferredId: string | null): string | null {
@@ -742,6 +815,41 @@ export class AppFreeSetup extends LitElement {
     const preset = this._presets.find((p) => p.id === this._selectedId);
     if (!preset) return;
     navigate('/free-timer', { preset });
+  }
+
+  private async _applySharedTrainingImport(): Promise<void> {
+    const shared = takePendingSharedTraining('free');
+    if (!shared || shared.kind !== 'free') return;
+
+    const preset = buildImportedFreePreset(shared);
+    await saveFreePreset(preset);
+    this._importedPresetName = preset.name;
+    await this._loadPresets(preset.id);
+  }
+
+  private _shareTargetPreset(): FreePreset | null {
+    if (this._editing) {
+      return {
+        id: this._editId ?? 'draft',
+        name: this._editName.trim() || msg('Untitled', { id: 'free-untitled' }),
+        phases: this._editPhases.map((phase) => ({ ...phase })),
+        rounds: this._editRounds,
+      };
+    }
+    return this._presets.find((preset) => preset.id === this._selectedId) ?? null;
+  }
+
+  private async _openShareDialog(): Promise<void> {
+    const preset = this._shareTargetPreset();
+    if (!preset) return;
+    this._shareDialogOpen = true;
+    this._shareUrl = '';
+    this._sharePresetCard = this._renderPresetCardForShare(preset);
+    try {
+      this._shareUrl = await buildFreeShareUrl(preset);
+    } catch (err) {
+      console.error('Failed to generate share URL:', err);
+    }
   }
 
   // ---- Phase editor helpers ----
@@ -828,6 +936,18 @@ export class AppFreeSetup extends LitElement {
     return msg(str`~${formatFreeCardDuration(roundSeconds)} / round`, { id: 'free-meta-round-duration' });
   }
 
+  private _renderPresetCardForShare(preset: FreePreset) {
+    return html`
+      <div class="preset-card active">
+        <div class="preset-card-header">
+          <span class="preset-name">${preset.name}</span>
+          <span class="preset-meta">${this._renderPresetMeta(preset)}</span>
+        </div>
+        ${this._renderPhasePills(preset)}
+      </div>
+    `;
+  }
+
   private _renderPresetList() {
     if (this._presets.length === 0) {
       return html`
@@ -852,11 +972,21 @@ export class AppFreeSetup extends LitElement {
             ${this._renderPhasePills(preset)}
             ${this._selectedId === preset.id ? html`
               <div class="preset-card-actions">
-                <button class="btn btn-secondary" @click=${(e: Event) => { e.stopPropagation(); this._openEdit(preset); }}>
-                  ${iconEdit} ${msg('Edit', { id: 'free-edit' })}
-                </button>
-                <button class="btn btn-danger" @click=${(e: Event) => { e.stopPropagation(); void this._deletePreset(preset.id); }}>
-                  ${iconX} ${msg('Delete')}
+                <div class="preset-card-actions-main">
+                  <button class="btn btn-secondary" @click=${(e: Event) => { e.stopPropagation(); void this._openShareDialog(); }}>
+                    ${iconShare2} ${msg('Share')}
+                  </button>
+                  <button class="btn btn-secondary" @click=${(e: Event) => { e.stopPropagation(); this._openEdit(preset); }}>
+                    ${iconEdit} ${msg('Edit', { id: 'free-edit' })}
+                  </button>
+                </div>
+                <button
+                  class="btn btn-danger btn-icon-only preset-card-actions-delete"
+                  title=${msg('Delete')}
+                  aria-label=${msg('Delete')}
+                  @click=${(e: Event) => { e.stopPropagation(); void this._deletePreset(preset.id); }}
+                >
+                  ${iconTrash}
                 </button>
               </div>
             ` : ''}
@@ -1040,10 +1170,32 @@ export class AppFreeSetup extends LitElement {
     `;
   }
 
+  private _renderImportBanner() {
+    if (!this._importedPresetName) return '';
+    return html`
+      <div class="import-banner">
+        <div>
+          <div class="import-banner-title">${msg('Imported from link')}</div>
+          <div class="import-banner-copy">
+            ${msg('Saved locally as')}: <strong>${this._importedPresetName}</strong>
+          </div>
+        </div>
+        <button
+          class="icon-btn"
+          @click=${() => { this._importedPresetName = null; }}
+          aria-label=${msg('Dismiss')}
+        >
+          ${iconX}
+        </button>
+      </div>
+    `;
+  }
+
   render() {
     return html`
       <div class="page">
         ${!this.embedded ? html`<h1 class="page-title">${msg('Free Training', { id: 'free-title' })}</h1>` : ''}
+        ${this._renderImportBanner()}
 
         ${this._editing ? this._renderEditor() : this._renderPresetList()}
 
@@ -1076,6 +1228,14 @@ export class AppFreeSetup extends LitElement {
           </button>
         `}
       </div>
+
+      <share-dialog
+        .open=${this._shareDialogOpen}
+        .title=${msg('Share free training')}
+        .url=${this._shareUrl}
+        .presetCard=${this._sharePresetCard}
+        @close-request=${() => { this._shareDialogOpen = false; this._shareUrl = ''; this._sharePresetCard = null; }}
+      ></share-dialog>
     `;
   }
 }

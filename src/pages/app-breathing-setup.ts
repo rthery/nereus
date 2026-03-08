@@ -18,14 +18,22 @@ import {
 } from '../services/breathing-presets.js';
 import {
   iconBookmark,
+  iconShare2,
   iconEdit,
+  iconTrash,
   iconX,
   symbolInhale,
   symbolExhale,
   symbolHoldIn,
   symbolHoldOut,
 } from '../components/icons.js';
+import {
+  buildBreathingShareUrl,
+  buildImportedBreathingPreset,
+  takePendingSharedTraining,
+} from '../services/training-share.js';
 import type { BreathingPhase, BreathingPreset } from '../types.js';
+import '../components/share-dialog.js';
 
 interface CustomDraftSnapshot {
   selectedId: string;
@@ -58,7 +66,10 @@ export class AppBreathingSetup extends LitElement {
   @state() private _saveDescription = '';
   @state() private _saveFormOpen = false;
   @state() private _editingSavedPresetId: string | null = null;
-
+  @state() private _shareDialogOpen = false;
+  @state() private _shareUrl = '';
+  @state() private _sharePresetCard: any = null;
+  @state() private _importedPresetName: string | null = null;
   private _editSnapshot: CustomDraftSnapshot | null = null;
 
   static styles = [
@@ -155,6 +166,45 @@ export class AppBreathingSetup extends LitElement {
         height: 11px;
       }
 
+      .import-banner {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: var(--spacing-md);
+        background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+        border: 1px solid color-mix(in srgb, var(--color-accent) 28%, transparent);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+      }
+
+      .import-banner-title {
+        font-size: var(--font-sm);
+        font-weight: 700;
+        color: var(--color-text-primary);
+      }
+
+      .import-banner-copy {
+        color: var(--color-text-secondary);
+        font-size: var(--font-sm);
+        line-height: 1.45;
+        margin-top: 4px;
+      }
+
+      .icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-full);
+        background: transparent;
+        color: var(--color-text-secondary);
+        cursor: pointer;
+      }
+
       .preset-tip {
         font-size: var(--font-xs);
         color: var(--color-text-muted);
@@ -209,8 +259,10 @@ export class AppBreathingSetup extends LitElement {
 
       .preset-card-actions {
         display: flex;
+        flex-wrap: wrap;
         gap: var(--spacing-sm);
         margin-top: var(--spacing-md);
+        align-items: center;
       }
 
       .preset-card-actions .btn {
@@ -218,12 +270,31 @@ export class AppBreathingSetup extends LitElement {
         align-items: center;
         justify-content: center;
         gap: 6px;
-        flex: 1;
+        flex: 0 0 auto;
+        min-height: 38px;
+        padding: 9px 16px;
+        font-size: var(--font-sm);
+        white-space: nowrap;
       }
 
       .preset-card-actions .btn svg {
         width: 14px;
         height: 14px;
+      }
+
+      .preset-card-actions .btn-icon-only {
+        padding: 9px 11px;
+        min-width: 38px;
+      }
+
+      .preset-card-actions-main {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+      }
+
+      .preset-card-actions-delete {
+        margin-left: auto;
       }
 
       .custom-phases {
@@ -502,7 +573,12 @@ export class AppBreathingSetup extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-    void this._load();
+    void this._initialize();
+  }
+
+  private async _initialize(): Promise<void> {
+    await this._load();
+    await this._applySharedTrainingImport();
   }
 
   private _sortedSavedPresets(presets: BreathingPreset[]): BreathingPreset[] {
@@ -745,6 +821,43 @@ export class AppBreathingSetup extends LitElement {
     return this._getPresetById(this._selectedId) ?? BREATHING_PRESETS[0];
   }
 
+  private async _applySharedTrainingImport(): Promise<void> {
+    const shared = takePendingSharedTraining('breathing');
+    if (!shared || shared.kind !== 'breathing') return;
+
+    const builtin = shared.preset.builtinId ? this._getPresetById(shared.preset.builtinId) : undefined;
+    const fallbackName = builtin ? this._presetDisplayName(builtin) : msg('Imported breathing exercise');
+    const preset = buildImportedBreathingPreset(shared, fallbackName);
+
+    await saveBreathingPreset(preset);
+    await saveSettings({
+      breathingDurationMode: shared.durationMode,
+      breathingCycles: shared.totalCycles,
+      breathingMinutes: shared.totalMinutes,
+      breathingLastPresetId: preset.id,
+    });
+
+    this._importedPresetName = preset.name;
+    await this._load(preset.id);
+  }
+
+  private async _openShareDialog(): Promise<void> {
+    const preset = this._buildEffectivePreset();
+    this._shareDialogOpen = true;
+    this._shareUrl = '';
+    this._sharePresetCard = this._renderPresetCardForShare(preset);
+    try {
+      this._shareUrl = await buildBreathingShareUrl({
+        preset,
+        durationMode: this._durationMode,
+        totalCycles: this._cycles,
+        totalMinutes: this._minutes,
+      });
+    } catch (err) {
+      console.error('Failed to generate share URL:', err);
+    }
+  }
+
   private _start(): void {
     const preset = this._buildEffectivePreset();
     const phases = activePhases(preset);
@@ -917,9 +1030,28 @@ export class AppBreathingSetup extends LitElement {
     `;
   }
 
+  private _renderPresetCardForShare(preset: BreathingPreset) {
+    const isSavedPreset = !isBuiltInBreathingPresetId(preset.id);
+    return html`
+      <div class="preset-card active">
+        <div class="preset-header">
+          <div class="preset-name-row">
+            <span class="preset-name">${this._presetDisplayName(preset)}</span>
+            ${isSavedPreset ? this._renderSavedIndicator() : ''}
+          </div>
+          <span class="preset-duration">${this._presetCycleDuration(preset)}s / ${msg('cycle')}</span>
+        </div>
+        ${preset.tip ? html`<div class="preset-tip">${preset.tip}</div>` : ''}
+        ${this._renderPresetPills(preset)}
+      </div>
+    `;
+  }
+
   private _renderPresetCard(preset: BreathingPreset) {
     const isSavedPreset = !isBuiltInBreathingPresetId(preset.id);
     const isSelected = this._selectedId === preset.id;
+    const canShare = isSavedPreset;
+    const showActions = isSelected && (canShare || isSavedPreset);
 
     return html`
       <div
@@ -942,16 +1074,53 @@ export class AppBreathingSetup extends LitElement {
           ${this._renderCustomEditor()}
           ${this._renderSaveForm()}
         ` : ''}
-        ${isSelected && isSavedPreset ? html`
+        ${showActions ? html`
           <div class="preset-card-actions">
-            <button class="btn btn-secondary" @click=${(event: Event) => { event.stopPropagation(); void this._startEditingSavedPreset(preset); }}>
-              ${iconEdit} ${msg('Edit')}
+            <div class="preset-card-actions-main">
+              ${canShare ? html`
+                <button class="btn btn-secondary" @click=${(event: Event) => { event.stopPropagation(); void this._openShareDialog(); }}>
+                  ${iconShare2} ${msg('Share')}
+                </button>
+              ` : ''}
+              ${isSavedPreset ? html`
+              <button class="btn btn-secondary" @click=${(event: Event) => { event.stopPropagation(); void this._startEditingSavedPreset(preset); }}>
+                ${iconEdit} ${msg('Edit')}
+              </button>
+              ` : ''}
+            </div>
+            ${isSavedPreset ? html`
+            <button
+              class="btn btn-danger btn-icon-only preset-card-actions-delete"
+              title=${msg('Delete')}
+              aria-label=${msg('Delete')}
+              @click=${(event: Event) => { event.stopPropagation(); void this._deleteSavedPreset(preset.id); }}
+            >
+              ${iconTrash}
             </button>
-            <button class="btn btn-danger" @click=${(event: Event) => { event.stopPropagation(); void this._deleteSavedPreset(preset.id); }}>
-              ${iconX} ${msg('Delete')}
-            </button>
+            ` : ''}
           </div>
         ` : ''}
+      </div>
+    `;
+  }
+
+  private _renderImportBanner() {
+    if (!this._importedPresetName) return '';
+    return html`
+      <div class="import-banner">
+        <div>
+          <div class="import-banner-title">${msg('Imported from link')}</div>
+          <div class="import-banner-copy">
+            ${msg('Saved locally as')}: <strong>${this._importedPresetName}</strong>
+          </div>
+        </div>
+        <button
+          class="icon-btn"
+          @click=${() => { this._importedPresetName = null; }}
+          aria-label=${msg('Dismiss')}
+        >
+          ${iconX}
+        </button>
       </div>
     `;
   }
@@ -962,6 +1131,7 @@ export class AppBreathingSetup extends LitElement {
     return html`
       <div class="page">
         <h1 class="page-title">${msg('Breathing Exercises')}</h1>
+        ${this._renderImportBanner()}
 
         <div class="section-label">${msg('Program')}</div>
         <div class="preset-list">
@@ -1045,6 +1215,14 @@ export class AppBreathingSetup extends LitElement {
             ${msg('Start')}
           </button>
         </div>
+
+        <share-dialog
+          .open=${this._shareDialogOpen}
+          .title=${msg('Share breathing training')}
+          .url=${this._shareUrl}
+          .presetCard=${this._sharePresetCard}
+          @close-request=${() => { this._shareDialogOpen = false; this._shareUrl = ''; this._sharePresetCard = null; }}
+        ></share-dialog>
       </div>
     `;
   }

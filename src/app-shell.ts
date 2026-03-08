@@ -5,6 +5,7 @@ import { themeStyles } from './styles/theme.js';
 import { getSettings, saveSettings } from './services/db.js';
 import { setLocale, detectLocale } from './localization.js';
 import { iconAlertTriangle } from './components/icons.js';
+import { initializeSharedTrainingFromUrl } from './services/training-share.js';
 import type { ThemePreference } from './types.js';
 import './components/app-nav.js';
 import './pwa-badge.js';
@@ -127,6 +128,7 @@ export class AppShell extends LitElement {
   }
 
   private async _init(): Promise<void> {
+    await initializeSharedTrainingFromUrl();
     const settings = await getSettings();
     this._theme = settings.theme;
     this._safetyAcknowledged = settings.safetyAcknowledged;

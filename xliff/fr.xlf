@@ -947,6 +947,78 @@
   <source>Free</source>
   <target>Libre</target>
 </trans-unit>
+<trans-unit id="s02d9c17dc1b28a16">
+  <source>Share this setup with a link or scan it from another device.</source>
+  <target>Partagez ce réglage avec un lien ou scannez-le depuis un autre appareil.</target>
+</trans-unit>
+<trans-unit id="s5e8250fb85d64c23">
+  <source>Close</source>
+  <target>Fermer</target>
+</trans-unit>
+<trans-unit id="s856453f39eb48463">
+  <source>QR code</source>
+  <target>Code QR</target>
+</trans-unit>
+<trans-unit id="se7485c75ab37ab7b">
+  <source>This link is too long to render as a QR code.</source>
+  <target>Ce lien est trop long pour être affiché en code QR.</target>
+</trans-unit>
+<trans-unit id="s3a39d0dec4a5a95e">
+  <source>URL length</source>
+  <target>Longueur de l’URL</target>
+</trans-unit>
+<trans-unit id="sf7d17ebf7e3b13b6">
+  <source>Long links may be harder to scan.</source>
+  <target>Les liens longs peuvent être plus difficiles à scanner.</target>
+</trans-unit>
+<trans-unit id="scd6bc1a49d40c487">
+  <source>Compact enough for chat and QR sharing.</source>
+  <target>Assez compact pour le chat et le partage par QR.</target>
+</trans-unit>
+<trans-unit id="sf4de3bfbfaca12e5">
+  <source>Copied</source>
+  <target>Copié</target>
+</trans-unit>
+<trans-unit id="s8b488c73c54eca21">
+  <source>Copy failed</source>
+  <target>Copie impossible</target>
+</trans-unit>
+<trans-unit id="s19172ed3838854fc">
+  <source>Copy link</source>
+  <target>Copier le lien</target>
+</trans-unit>
+<trans-unit id="s2df075aface0dab8">
+  <source>Share</source>
+  <target>Partager</target>
+</trans-unit>
+<trans-unit id="s32e9cdefd116985d">
+  <source>QR ready</source>
+  <target>QR prêt</target>
+</trans-unit>
+<trans-unit id="s5473cbe62014cc2b">
+  <source>Imported breathing exercise</source>
+  <target>Exercice respiratoire importé</target>
+</trans-unit>
+<trans-unit id="sa068c7f2ac5f98bd">
+  <source>Imported from link</source>
+  <target>Importé depuis un lien</target>
+</trans-unit>
+<trans-unit id="sbc283c285bc9a658">
+  <source>Saved locally as</source>
+  <target>Enregistré localement sous</target>
+</trans-unit>
+<trans-unit id="s12d6dde9b30c3093">
+  <source>Dismiss</source>
+  <target>Masquer</target>
+</trans-unit>
+<trans-unit id="sb2b2318e56321e6f">
+  <source>Share breathing setup</source>
+  <target>Partager l’exercice respiratoire</target>
+</trans-unit>
+<trans-unit id="s7235290ebb2321f8">
+  <source>Share free training</source>
+  <target>Partager l’entraînement libre</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

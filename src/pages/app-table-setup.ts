@@ -12,6 +12,7 @@ import {
   CO2_PRESETS,
   O2_PRESETS,
 } from '../services/tables.js';
+import { peekPendingSharedTraining } from '../services/training-share.js';
 import { navigate } from '../navigation.js';
 import type { TableRound, Difficulty, TableType, RoundCount } from '../types.js';
 import './app-breathing-setup.js';
@@ -397,6 +398,11 @@ export class AppTableSetup extends LitElement {
     if (this.mode) {
       this._mode = this.mode;
       this._activeTab = this.mode;
+    } else {
+      const sharedTraining = peekPendingSharedTraining();
+      if (sharedTraining?.kind === 'free') {
+        this._activeTab = 'free';
+      }
     }
     // else: _activeTab stays 'breathing' — default for /training
     void this._load();

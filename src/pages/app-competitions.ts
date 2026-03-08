@@ -14,7 +14,7 @@ import {
   getDisciplineShortLabel,
 } from '../services/disciplines.js';
 import { formatTime } from '../services/tables.js';
-import { iconX, iconTrophy, iconAward, iconPlus, iconChevronDown, iconChevronUp, iconEdit } from '../components/icons.js';
+import { iconTrash, iconTrophy, iconAward, iconPlus, iconEdit } from '../components/icons.js';
 import { getLocale } from '../localization.js';
 import type { Competition, DisciplineKey, DisciplineResult } from '../types.js';
 
@@ -61,7 +61,7 @@ export class AppCompetitions extends LitElement {
   @state() private _tab: 'list' | 'progress' = 'list';
   @state() private _showForm = false;
   @state() private _editingId: string | null = null;
-  @state() private _expanded = new Set<string>();
+  @state() private _selectedCompetitionId: string | null = null;
   @state() private _selectedDiscipline: DisciplineKey = 'STA';
 
   // Form state
@@ -400,6 +400,13 @@ export class AppCompetitions extends LitElement {
         border-radius: var(--radius-md);
         margin-bottom: var(--spacing-sm);
         overflow: hidden;
+        cursor: pointer;
+        transition: border-color var(--transition-fast), background var(--transition-fast);
+      }
+
+      .competition-card.selected {
+        border-color: var(--color-accent);
+        background: color-mix(in srgb, var(--color-accent) 10%, var(--color-bg-surface));
       }
 
       .card-top {
@@ -429,24 +436,37 @@ export class AppCompetitions extends LitElement {
       .card-actions {
         display: flex;
         align-items: center;
-        gap: var(--spacing-xs);
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+        padding: 0 var(--spacing-md) var(--spacing-md);
       }
 
-      .icon-btn {
-        background: none;
-        border: none;
-        color: var(--color-text-muted);
-        cursor: pointer;
-        padding: var(--spacing-xs);
+      .card-actions-main {
         display: flex;
-        align-items: center;
-        border-radius: var(--radius-sm);
-        transition: color var(--transition-fast);
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
       }
 
-      .icon-btn:hover { color: var(--color-text-primary); }
-      .icon-btn.delete:hover { color: var(--color-danger); }
-      .icon-btn svg { width: 18px; height: 18px; }
+      .card-actions .btn {
+        min-height: 38px;
+        padding: 9px 16px;
+        font-size: var(--font-sm);
+        white-space: nowrap;
+      }
+
+      .card-actions .btn svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .card-actions .btn-icon-only {
+        padding: 9px 11px;
+        min-width: 38px;
+      }
+
+      .card-actions-delete {
+        margin-left: auto;
+      }
 
       .result-chips {
         display: flex;
@@ -616,11 +636,8 @@ export class AppCompetitions extends LitElement {
     this._showForm = true;
   }
 
-  private _toggleExpand(id: string): void {
-    const next = new Set(this._expanded);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    this._expanded = next;
+  private _toggleCardSelection(id: string): void {
+    this._selectedCompetitionId = this._selectedCompetitionId === id ? null : id;
   }
 
   private _updateResult<K extends keyof FormResult>(
@@ -674,6 +691,7 @@ export class AppCompetitions extends LitElement {
 
   private async _delete(id: string): Promise<void> {
     await deleteCompetition(id);
+    if (this._selectedCompetitionId === id) this._selectedCompetitionId = null;
     await this._load();
   }
 
@@ -869,10 +887,8 @@ export class AppCompetitions extends LitElement {
   }
 
   private _renderCard(c: Competition) {
-    const expanded = this._expanded.has(c.id);
-    const visibleResults = expanded ? c.results : c.results.slice(0, 4);
     return html`
-      <div class="competition-card">
+      <div class="competition-card ${this._selectedCompetitionId === c.id ? 'selected' : ''}" @click=${() => this._toggleCardSelection(c.id)}>
         <div class="card-top">
           <div class="card-title-group">
             <div class="card-name">${c.name}</div>
@@ -881,37 +897,44 @@ export class AppCompetitions extends LitElement {
               · ${c.results.length} ${msg('disciplines')}
             </div>
           </div>
-          <div class="card-actions">
-            <button
-              class="icon-btn"
-              @click=${() => { this._openEditForm(c); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              aria-label=${msg('Edit')}
-            >${iconEdit}</button>
-            <button
-              class="icon-btn"
-              @click=${() => this._toggleExpand(c.id)}
-              aria-label=${expanded ? msg('Collapse') : msg('Expand')}
-            >${expanded ? iconChevronUp : iconChevronDown}</button>
-            <button
-              class="icon-btn delete"
-              @click=${() => this._delete(c.id)}
-              aria-label=${msg('Delete')}
-            >${iconX}</button>
-          </div>
         </div>
 
         <div class="result-chips">
-          ${visibleResults.map((r) => html`
+          ${c.results.map((r) => html`
             <div class="result-chip">
               <span style="font-weight:700;color:var(--color-accent)">${r.discipline}</span>
               <span>${formatDisciplineValue(r.discipline, r.value)}</span>
               ${r.rank != null ? this._renderRankBadge(r.rank) : ''}
             </div>
           `)}
-          ${!expanded && c.results.length > 4
-            ? html`<div class="result-chip">+${c.results.length - 4}</div>`
-            : ''}
         </div>
+        ${this._selectedCompetitionId === c.id ? html`
+          <div class="card-actions">
+            <div class="card-actions-main">
+              <button
+                class="btn btn-secondary"
+                @click=${(event: Event) => {
+                  event.stopPropagation();
+                  this._openEditForm(c);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              >
+                ${iconEdit} ${msg('Edit')}
+              </button>
+            </div>
+            <button
+              class="btn btn-danger btn-icon-only card-actions-delete"
+              title=${msg('Delete')}
+              aria-label=${msg('Delete')}
+              @click=${async (event: Event) => {
+                event.stopPropagation();
+                await this._delete(c.id);
+              }}
+            >
+              ${iconTrash}
+            </button>
+          </div>
+        ` : ''}
       </div>
     `;
   }

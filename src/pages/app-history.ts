@@ -16,7 +16,7 @@ import {
 } from '../services/db.js';
 import { formatTime } from '../services/tables.js';
 import { formatDisciplineValue } from '../services/disciplines.js';
-import { iconX, iconTrophy, iconEdit, iconBarChart2 } from '../components/icons.js';
+import { iconTrash, iconTrophy, iconEdit, iconBarChart2 } from '../components/icons.js';
 import { getLocale } from '../localization.js';
 import { navigate } from '../navigation.js';
 import type { Session, PBRecord, Competition, BreathingSession, FreeSession } from '../types.js';
@@ -48,6 +48,7 @@ export class AppHistory extends LitElement {
   @state() private _timelineEntries: TimelineEntry[] = [];
   @state() private _filter: FilterType = 'all';
   @state() private _trainingFilter: TrainingFilterType = 'all';
+  @state() private _selectedEntryKey: string | null = null;
 
   private _formatLocale = '';
   private _dateFormatter: Intl.DateTimeFormat | null = null;
@@ -219,6 +220,15 @@ export class AppHistory extends LitElement {
         border: 1px solid var(--color-border);
         border-radius: var(--radius-md);
         padding: var(--spacing-md);
+        cursor: pointer;
+        transition: border-color var(--transition-fast), background var(--transition-fast);
+      }
+
+      .session-card.selected,
+      .pb-card.selected,
+      .competition-card.selected {
+        border-color: var(--color-accent);
+        background: color-mix(in srgb, var(--color-accent) 10%, var(--color-bg-surface));
       }
 
       .card-top {
@@ -281,6 +291,8 @@ export class AppHistory extends LitElement {
         border: 1px solid var(--color-border);
         border-radius: var(--radius-md);
         padding: var(--spacing-sm) var(--spacing-md);
+        cursor: pointer;
+        transition: border-color var(--transition-fast), background var(--transition-fast);
       }
 
       .pb-row {
@@ -309,6 +321,8 @@ export class AppHistory extends LitElement {
         border: 1px solid var(--color-border);
         border-radius: var(--radius-md);
         padding: var(--spacing-md);
+        cursor: pointer;
+        transition: border-color var(--transition-fast), background var(--transition-fast);
       }
 
       .comp-header {
@@ -358,39 +372,39 @@ export class AppHistory extends LitElement {
         color: var(--color-text-secondary);
       }
 
-      /* Delete btn */
-      .delete-btn {
-        background: none;
-        border: none;
-        color: var(--color-text-muted);
-        cursor: pointer;
-        padding: var(--spacing-xs);
-        font-family: inherit;
+      .entry-actions {
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-md);
       }
 
-      .delete-btn svg { width: 16px; height: 16px; }
-      .delete-btn:hover { color: var(--color-danger); }
-
-      .edit-btn {
-        background: none;
-        border: none;
-        color: var(--color-text-muted);
-        cursor: pointer;
-        padding: var(--spacing-xs);
-        font-family: inherit;
+      .entry-actions-main {
         display: flex;
-        align-items: center;
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
       }
 
-      .edit-btn svg { width: 16px; height: 16px; }
-      .edit-btn:hover { color: var(--color-accent); }
+      .entry-actions .btn {
+        min-height: 38px;
+        padding: 9px 16px;
+        font-size: var(--font-sm);
+        white-space: nowrap;
+      }
 
-      .card-actions {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-xs);
+      .entry-actions .btn svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .entry-actions .btn-icon-only {
+        padding: 9px 11px;
+        min-width: 38px;
+      }
+
+      .entry-actions-delete {
+        margin-left: auto;
       }
 
       .empty-state {
@@ -462,6 +476,20 @@ export class AppHistory extends LitElement {
     if (this._trainingFilter === 'breathing') return entry.kind === 'breathing';
     if (this._trainingFilter === 'free') return entry.kind === 'free';
     return entry.kind === 'session' && (entry.data as Session).type === this._trainingFilter;
+  }
+
+  private _entryKey(entry: TimelineEntry): string {
+    switch (entry.kind) {
+      case 'session': return `session:${entry.data.id}`;
+      case 'pb': return `pb:${entry.data.date}`;
+      case 'competition': return `competition:${entry.data.id}`;
+      case 'breathing': return `breathing:${entry.data.id}`;
+      case 'free': return `free:${entry.data.id}`;
+    }
+  }
+
+  private _toggleEntrySelection(key: string): void {
+    this._selectedEntryKey = this._selectedEntryKey === key ? null : key;
   }
 
   private _ensureFormatters(): void {
@@ -545,9 +573,35 @@ export class AppHistory extends LitElement {
     return groups;
   }
 
-  private _renderSession(s: Session) {
+  private _renderEntryActions(deleteAction: () => Promise<void>, editAction?: () => void) {
     return html`
-      <div class="session-card">
+      <div class="entry-actions">
+        <div class="entry-actions-main">
+          ${editAction ? html`
+            <button class="btn btn-secondary" @click=${(event: Event) => { event.stopPropagation(); editAction(); }}>
+              ${iconEdit} ${msg('Edit')}
+            </button>
+          ` : ''}
+        </div>
+        <button
+          class="btn btn-danger btn-icon-only entry-actions-delete"
+          title=${msg('Delete')}
+          aria-label=${msg('Delete')}
+          @click=${async (event: Event) => {
+            event.stopPropagation();
+            await deleteAction();
+            this._selectedEntryKey = null;
+          }}
+        >
+          ${iconTrash}
+        </button>
+      </div>
+    `;
+  }
+
+  private _renderSession(s: Session, selected: boolean) {
+    return html`
+      <div class="session-card ${selected ? 'selected' : ''}">
         <div class="card-top">
           <div>
             <span class="session-type ${s.type}">${s.type.toUpperCase()}</span>
@@ -555,9 +609,6 @@ export class AppHistory extends LitElement {
               ${s.completed ? msg('Completed') : msg('Stopped')}
             </span>
           </div>
-          <button class="delete-btn" @click=${() => this._deleteSession(s.id)}>
-            ${iconX}
-          </button>
         </div>
         <div class="card-details">
           ${s.type === 'pb-test' && s.personalBest
@@ -582,13 +633,14 @@ export class AppHistory extends LitElement {
                 </div>
               `}
         </div>
+        ${selected ? this._renderEntryActions(() => this._deleteSession(s.id)) : ''}
       </div>
     `;
   }
 
-  private _renderBreathingSession(b: BreathingSession) {
+  private _renderBreathingSession(b: BreathingSession, selected: boolean) {
     return html`
-      <div class="session-card">
+      <div class="session-card ${selected ? 'selected' : ''}">
         <div class="card-top">
           <div>
             <span class="session-type" style="color:var(--color-rest)">
@@ -598,9 +650,6 @@ export class AppHistory extends LitElement {
               ${b.completed ? msg('Completed') : msg('Stopped')}
             </span>
           </div>
-          <button class="delete-btn" @click=${() => this._deleteBreathingSession(b.id)}>
-            ${iconX}
-          </button>
         </div>
         <div class="card-details">
           <div>
@@ -616,13 +665,14 @@ export class AppHistory extends LitElement {
             <div class="detail-value">${formatTime(b.totalDuration)}</div>
           </div>
         </div>
+        ${selected ? this._renderEntryActions(() => this._deleteBreathingSession(b.id)) : ''}
       </div>
     `;
   }
 
-  private _renderFreeSession(s: FreeSession) {
+  private _renderFreeSession(s: FreeSession, selected: boolean) {
     return html`
-      <div class="session-card">
+      <div class="session-card ${selected ? 'selected' : ''}">
         <div class="card-top">
           <div>
             <span class="session-type free">${msg('Free', { id: 'free-tab' })}</span>
@@ -630,9 +680,6 @@ export class AppHistory extends LitElement {
               ${s.completed ? msg('Completed') : msg('Stopped')}
             </span>
           </div>
-          <button class="delete-btn" @click=${() => this._deleteFreeSession(s.id)}>
-            ${iconX}
-          </button>
         </div>
         <div class="card-details">
           <div>
@@ -648,40 +695,31 @@ export class AppHistory extends LitElement {
             <div class="detail-value">${formatTime(s.totalDuration)}</div>
           </div>
         </div>
+        ${selected ? this._renderEntryActions(() => this._deleteFreeSession(s.id)) : ''}
       </div>
     `;
   }
 
-  private _renderPB(pb: PBRecord) {
+  private _renderPB(pb: PBRecord, selected: boolean) {
     return html`
-      <div class="pb-card">
+      <div class="pb-card ${selected ? 'selected' : ''}">
         <div class="pb-row">
           <span class="session-type pb-test">${msg('PB')}</span>
           <span class="pb-value">${formatTime(pb.value)}</span>
           <span class="pb-source">${pb.source}</span>
-          <div class="card-actions">
-            <button class="delete-btn" @click=${() => this._deletePB(pb.date)}>${iconX}</button>
-          </div>
         </div>
+        ${selected ? this._renderEntryActions(() => this._deletePB(pb.date)) : ''}
       </div>
     `;
   }
 
-  private _renderCompetition(c: Competition) {
+  private _renderCompetition(c: Competition, selected: boolean) {
     return html`
-      <div class="competition-card">
+      <div class="competition-card ${selected ? 'selected' : ''}">
         <div class="card-top">
           <div class="comp-header">
             <span class="comp-icon">${iconTrophy}</span>
             <span class="comp-name">${c.name}</span>
-          </div>
-          <div class="card-actions">
-            <button class="edit-btn" @click=${() => this._editCompetition(c.id)}>
-              ${iconEdit}
-            </button>
-            <button class="delete-btn" @click=${() => this._deleteCompetition(c.id)}>
-              ${iconX}
-            </button>
           </div>
         </div>
         ${c.location ? html`<div class="comp-meta">${c.location}</div>` : ''}
@@ -694,22 +732,25 @@ export class AppHistory extends LitElement {
             </div>
           `)}
         </div>
+        ${selected ? this._renderEntryActions(() => this._deleteCompetition(c.id), () => this._editCompetition(c.id)) : ''}
       </div>
     `;
   }
 
   private _renderEntry(entry: TimelineEntry) {
+    const key = this._entryKey(entry);
+    const selected = this._selectedEntryKey === key;
     return html`
-      <div class="timeline-entry">
+      <div class="timeline-entry" @click=${() => this._toggleEntrySelection(key)}>
         ${entry.kind === 'session'
-          ? this._renderSession(entry.data as Session)
+          ? this._renderSession(entry.data as Session, selected)
           : entry.kind === 'pb'
-          ? this._renderPB(entry.data as PBRecord)
+          ? this._renderPB(entry.data as PBRecord, selected)
           : entry.kind === 'breathing'
-          ? this._renderBreathingSession(entry.data as BreathingSession)
+          ? this._renderBreathingSession(entry.data as BreathingSession, selected)
           : entry.kind === 'free'
-          ? this._renderFreeSession(entry.data as FreeSession)
-          : this._renderCompetition(entry.data as Competition)}
+          ? this._renderFreeSession(entry.data as FreeSession, selected)
+          : this._renderCompetition(entry.data as Competition, selected)}
       </div>
     `;
   }

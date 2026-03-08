@@ -7,26 +7,35 @@ import {
   getPBHistory,
   getCompetitions,
   getBreathingSessions,
+  getFreeSessions,
   deleteSession,
   deletePBRecord,
   deleteCompetition,
   deleteBreathingSession,
-  savePB,
+  deleteFreeSession,
 } from '../services/db.js';
 import { formatTime } from '../services/tables.js';
 import { formatDisciplineValue } from '../services/disciplines.js';
 import { iconX, iconTrophy, iconEdit, iconBarChart2 } from '../components/icons.js';
 import { getLocale } from '../localization.js';
 import { navigate } from '../navigation.js';
-import type { Session, PBRecord, Competition, BreathingSession } from '../types.js';
+import type { Session, PBRecord, Competition, BreathingSession, FreeSession } from '../types.js';
 
-type FilterType = 'all' | 'training' | 'breathing' | 'competitions' | 'pb';
+type FilterType = 'all' | 'training' | 'competitions' | 'pb';
+type TrainingFilterType = 'all' | 'breathing' | 'co2' | 'o2' | 'free';
 
 type TimelineEntry =
   | { kind: 'session'; date: number; data: Session }
   | { kind: 'pb'; date: number; data: PBRecord }
   | { kind: 'competition'; date: number; data: Competition }
-  | { kind: 'breathing'; date: number; data: BreathingSession };
+  | { kind: 'breathing'; date: number; data: BreathingSession }
+  | { kind: 'free'; date: number; data: FreeSession };
+
+type TimelineGroup = {
+  dayKey: number;
+  label: string;
+  entries: TimelineEntry[];
+};
 
 @localized()
 @customElement('app-history')
@@ -35,16 +44,13 @@ export class AppHistory extends LitElement {
   @state() private _pbHistory: PBRecord[] = [];
   @state() private _competitions: Competition[] = [];
   @state() private _breathingSessions: BreathingSession[] = [];
+  @state() private _freeSessions: FreeSession[] = [];
   @state() private _timelineEntries: TimelineEntry[] = [];
   @state() private _filter: FilterType = 'all';
-  @state() private _editingPBDate: number | null = null;
-  @state() private _editPBMin = 0;
-  @state() private _editPBSec = 0;
+  @state() private _trainingFilter: TrainingFilterType = 'all';
 
   private _formatLocale = '';
-  private _dateTimeFormatter: Intl.DateTimeFormat | null = null;
   private _dateFormatter: Intl.DateTimeFormat | null = null;
-  private _dateTimeCache = new Map<number, string>();
   private _dateCache = new Map<number, string>();
 
   static styles = [
@@ -78,6 +84,10 @@ export class AppHistory extends LitElement {
         padding: var(--spacing-sm) var(--spacing-xs);
         text-align: center;
         min-width: 0;
+      }
+
+      .stat-card.training {
+        grid-column: 1 / -1;
       }
 
       .stat-card .stat-value {
@@ -126,10 +136,39 @@ export class AppHistory extends LitElement {
         color: #fff;
       }
 
+      .subfilters {
+        display: flex;
+        gap: var(--spacing-xs);
+        margin: calc(-1 * var(--spacing-sm)) 0 var(--spacing-lg);
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+
+      .subfilter-btn {
+        padding: 6px 10px;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-full);
+        background: var(--color-bg-surface);
+        color: var(--color-text-secondary);
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        white-space: nowrap;
+      }
+
+      .subfilter-btn.active {
+        border-color: var(--color-accent);
+        background: color-mix(in srgb, var(--color-accent) 14%, var(--color-bg-surface));
+        color: var(--color-accent);
+      }
+
       /* Timeline */
       .timeline {
         position: relative;
         padding-left: var(--spacing-xl);
+        display: grid;
+        gap: var(--spacing-lg);
       }
 
       .timeline::before {
@@ -142,12 +181,21 @@ export class AppHistory extends LitElement {
         background: var(--color-border);
       }
 
-      .timeline-entry {
+      .timeline-group {
         position: relative;
-        margin-bottom: var(--spacing-md);
       }
 
-      .timeline-entry::before {
+      .timeline-date {
+        position: relative;
+        margin-bottom: var(--spacing-sm);
+        font-size: var(--font-xs);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+      }
+
+      .timeline-date::before {
         content: '';
         position: absolute;
         left: calc(-1 * var(--spacing-xl) + 4px);
@@ -160,15 +208,9 @@ export class AppHistory extends LitElement {
         border: 2px solid var(--color-bg-primary);
       }
 
-      .timeline-entry.session-co2::before { background: var(--color-hold); }
-      .timeline-entry.session-o2::before { background: var(--color-breathe); }
-      .timeline-entry.session-pb::before { background: var(--color-accent); }
-      .timeline-entry.breathing::before { background: var(--color-rest); opacity: 0.7; }
-      .timeline-entry.competition::before {
-        background: var(--color-accent);
-        width: 12px;
-        height: 12px;
-        left: calc(-1 * var(--spacing-xl) + 3px);
+      .timeline-group-items {
+        display: grid;
+        gap: var(--spacing-sm);
       }
 
       /* Session card */
@@ -195,6 +237,7 @@ export class AppHistory extends LitElement {
 
       .session-type.co2 { color: var(--color-hold); }
       .session-type.o2 { color: var(--color-breathe); }
+      .session-type.free { color: var(--color-accent); }
       .session-type.pb-test { color: var(--color-accent); }
 
       .session-status {
@@ -213,11 +256,6 @@ export class AppHistory extends LitElement {
       .session-status.incomplete {
         background: rgba(255, 152, 0, 0.15);
         color: var(--color-hold);
-      }
-
-      .card-date {
-        font-size: var(--font-xs);
-        color: var(--color-text-muted);
       }
 
       .card-details {
@@ -263,70 +301,6 @@ export class AppHistory extends LitElement {
         font-size: var(--font-xs);
         color: var(--color-text-muted);
         text-transform: uppercase;
-      }
-
-      .pb-edit-form {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-        margin-top: var(--spacing-sm);
-        padding-top: var(--spacing-sm);
-        border-top: 1px solid var(--color-border);
-      }
-
-      .time-picker {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-      }
-
-      .time-picker input {
-        width: 48px;
-        padding: var(--spacing-xs);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-sm);
-        background: var(--color-bg-primary);
-        color: var(--color-text-primary);
-        font-size: var(--font-sm);
-        font-weight: 600;
-        text-align: center;
-        font-variant-numeric: tabular-nums;
-        font-family: inherit;
-      }
-
-      .time-sep {
-        font-weight: 700;
-        color: var(--color-text-secondary);
-      }
-
-      .time-unit {
-        font-size: var(--font-xs);
-        color: var(--color-text-muted);
-      }
-
-      .save-btn {
-        padding: var(--spacing-xs) var(--spacing-sm);
-        background: var(--color-accent);
-        color: #fff;
-        border: none;
-        border-radius: var(--radius-sm);
-        font-size: var(--font-xs);
-        font-weight: 700;
-        cursor: pointer;
-        font-family: inherit;
-        white-space: nowrap;
-      }
-
-      .cancel-btn {
-        padding: var(--spacing-xs) var(--spacing-sm);
-        background: transparent;
-        color: var(--color-text-muted);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-sm);
-        font-size: var(--font-xs);
-        font-weight: 600;
-        cursor: pointer;
-        font-family: inherit;
       }
 
       /* Competition card */
@@ -433,14 +407,16 @@ export class AppHistory extends LitElement {
   }
 
   private async _load(): Promise<void> {
-    const [sessions, pbHistory, competitions] = await Promise.all([
+    const [sessions, pbHistory, competitions, freeSessions] = await Promise.all([
       getSessions(100),
       getPBHistory(),
       getCompetitions(100),
+      getFreeSessions(100),
     ]);
     this._sessions = sessions;
     this._pbHistory = pbHistory;
     this._competitions = competitions;
+    this._freeSessions = freeSessions;
     // Guard against old IndexedDB versions that don't have the breathing-sessions store yet
     try {
       this._breathingSessions = await getBreathingSessions(100);
@@ -456,6 +432,7 @@ export class AppHistory extends LitElement {
       ...this._pbHistory.map((p): TimelineEntry => ({ kind: 'pb', date: p.date, data: p })),
       ...this._competitions.map((c): TimelineEntry => ({ kind: 'competition', date: c.date, data: c })),
       ...this._breathingSessions.map((b): TimelineEntry => ({ kind: 'breathing', date: b.date, data: b })),
+      ...this._freeSessions.map((f): TimelineEntry => ({ kind: 'free', date: f.date, data: f })),
     ];
     this._timelineEntries = entries.sort((a, b) => b.date - a.date);
   }
@@ -463,31 +440,40 @@ export class AppHistory extends LitElement {
   private get _filtered(): TimelineEntry[] {
     const all = this._timelineEntries;
     if (this._filter === 'all') return all;
-    if (this._filter === 'training') return all.filter((e) => e.kind === 'session');
-    if (this._filter === 'breathing') return all.filter((e) => e.kind === 'breathing');
+    if (this._filter === 'training') {
+      return all.filter((entry) => this._isTrainingEntry(entry) && this._matchesTrainingFilter(entry));
+    }
     if (this._filter === 'competitions') return all.filter((e) => e.kind === 'competition');
-    if (this._filter === 'pb') return all.filter((e) => e.kind === 'pb');
+    if (this._filter === 'pb') {
+      return all.filter((entry) => entry.kind === 'pb'
+        || (entry.kind === 'session' && (entry.data as Session).type === 'pb-test'));
+    }
     return all;
+  }
+
+  private _isTrainingEntry(entry: TimelineEntry): boolean {
+    return entry.kind === 'breathing'
+      || entry.kind === 'free'
+      || (entry.kind === 'session' && (entry.data as Session).type !== 'pb-test');
+  }
+
+  private _matchesTrainingFilter(entry: TimelineEntry): boolean {
+    if (this._trainingFilter === 'all') return true;
+    if (this._trainingFilter === 'breathing') return entry.kind === 'breathing';
+    if (this._trainingFilter === 'free') return entry.kind === 'free';
+    return entry.kind === 'session' && (entry.data as Session).type === this._trainingFilter;
   }
 
   private _ensureFormatters(): void {
     const locale = getLocale();
-    if (locale === this._formatLocale && this._dateTimeFormatter && this._dateFormatter) return;
+    if (locale === this._formatLocale && this._dateFormatter) return;
 
     this._formatLocale = locale;
-    this._dateTimeFormatter = new Intl.DateTimeFormat(locale, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
     this._dateFormatter = new Intl.DateTimeFormat(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     });
-    this._dateTimeCache.clear();
     this._dateCache.clear();
   }
 
@@ -511,34 +497,14 @@ export class AppHistory extends LitElement {
     await this._load();
   }
 
+  private async _deleteFreeSession(id: string): Promise<void> {
+    await deleteFreeSession(id);
+    await this._load();
+  }
+
   private async _deletePB(date: number): Promise<void> {
     await deletePBRecord(date);
     await this._load();
-  }
-
-  private _startEditPB(pb: PBRecord): void {
-    this._editingPBDate = pb.date;
-    this._editPBMin = Math.floor(pb.value / 60);
-    this._editPBSec = pb.value % 60;
-  }
-
-  private async _saveEditPB(pb: PBRecord): Promise<void> {
-    const newValue = this._editPBMin * 60 + this._editPBSec;
-    if (newValue > 0) {
-      await savePB({ ...pb, value: newValue });
-    }
-    this._editingPBDate = null;
-    await this._load();
-  }
-
-  private _formatDate(ts: number): string {
-    this._ensureFormatters();
-    const cached = this._dateTimeCache.get(ts);
-    if (cached) return cached;
-
-    const formatted = this._dateTimeFormatter!.format(new Date(ts));
-    this._dateTimeCache.set(ts, formatted);
-    return formatted;
   }
 
   private _formatDateShort(ts: number): string {
@@ -549,6 +515,34 @@ export class AppHistory extends LitElement {
     const formatted = this._dateFormatter!.format(new Date(ts));
     this._dateCache.set(ts, formatted);
     return formatted;
+  }
+
+  private _getDayKey(ts: number): number {
+    const day = new Date(ts);
+    day.setHours(0, 0, 0, 0);
+    return day.getTime();
+  }
+
+  private _groupEntries(entries: TimelineEntry[]): TimelineGroup[] {
+    const groups: TimelineGroup[] = [];
+
+    for (const entry of entries) {
+      const dayKey = this._getDayKey(entry.date);
+      const currentGroup = groups.at(-1);
+
+      if (!currentGroup || currentGroup.dayKey !== dayKey) {
+        groups.push({
+          dayKey,
+          label: this._formatDateShort(entry.date),
+          entries: [entry],
+        });
+        continue;
+      }
+
+      currentGroup.entries.push(entry);
+    }
+
+    return groups;
   }
 
   private _renderSession(s: Session) {
@@ -565,7 +559,6 @@ export class AppHistory extends LitElement {
             ${iconX}
           </button>
         </div>
-        <div class="card-date">${this._formatDate(s.date)}</div>
         <div class="card-details">
           ${s.type === 'pb-test' && s.personalBest
             ? html`
@@ -609,7 +602,6 @@ export class AppHistory extends LitElement {
             ${iconX}
           </button>
         </div>
-        <div class="card-date">${this._formatDate(b.date)}</div>
         <div class="card-details">
           <div>
             <div class="detail-label">${msg('Program')}</div>
@@ -628,44 +620,49 @@ export class AppHistory extends LitElement {
     `;
   }
 
+  private _renderFreeSession(s: FreeSession) {
+    return html`
+      <div class="session-card">
+        <div class="card-top">
+          <div>
+            <span class="session-type free">${msg('Free', { id: 'free-tab' })}</span>
+            <span class="session-status ${s.completed ? 'completed' : 'incomplete'}">
+              ${s.completed ? msg('Completed') : msg('Stopped')}
+            </span>
+          </div>
+          <button class="delete-btn" @click=${() => this._deleteFreeSession(s.id)}>
+            ${iconX}
+          </button>
+        </div>
+        <div class="card-details">
+          <div>
+            <div class="detail-label">${msg('Program')}</div>
+            <div class="detail-value">${s.presetName}</div>
+          </div>
+          <div>
+            <div class="detail-label">${msg('Rounds')}</div>
+            <div class="detail-value">${s.completedRounds}/${s.totalRounds}</div>
+          </div>
+          <div>
+            <div class="detail-label">${msg('Duration')}</div>
+            <div class="detail-value">${formatTime(s.totalDuration)}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   private _renderPB(pb: PBRecord) {
-    const isEditing = this._editingPBDate === pb.date;
     return html`
       <div class="pb-card">
         <div class="pb-row">
           <span class="session-type pb-test">${msg('PB')}</span>
           <span class="pb-value">${formatTime(pb.value)}</span>
           <span class="pb-source">${pb.source}</span>
-          <span class="card-date">${this._formatDate(pb.date)}</span>
           <div class="card-actions">
-            ${pb.source === 'manual' && !isEditing
-              ? html`<button class="edit-btn" @click=${() => this._startEditPB(pb)}>${iconEdit}</button>`
-              : ''}
             <button class="delete-btn" @click=${() => this._deletePB(pb.date)}>${iconX}</button>
           </div>
         </div>
-        ${isEditing
-          ? html`
-              <div class="pb-edit-form">
-                <div class="time-picker">
-                  <input
-                    type="number" inputmode="numeric" min="0" max="59"
-                    .value=${String(this._editPBMin)}
-                    @input=${(e: Event) => { this._editPBMin = parseInt((e.target as HTMLInputElement).value, 10) || 0; }}
-                  />
-                  <span class="time-sep">:</span>
-                  <input
-                    type="number" inputmode="numeric" min="0" max="59"
-                    .value=${String(this._editPBSec).padStart(2, '0')}
-                    @input=${(e: Event) => { this._editPBSec = Math.max(0, Math.min(59, parseInt((e.target as HTMLInputElement).value, 10) || 0)); }}
-                  />
-                </div>
-                <span class="time-unit">${msg('min : sec')}</span>
-                <button class="save-btn" @click=${() => this._saveEditPB(pb)}>${msg('Save')}</button>
-                <button class="cancel-btn" @click=${() => { this._editingPBDate = null; }}>${msg('Cancel')}</button>
-              </div>
-            `
-          : ''}
       </div>
     `;
   }
@@ -687,9 +684,7 @@ export class AppHistory extends LitElement {
             </button>
           </div>
         </div>
-        <div class="comp-meta">
-          ${this._formatDateShort(c.date)}${c.location ? html` · ${c.location}` : ''}
-        </div>
+        ${c.location ? html`<div class="comp-meta">${c.location}</div>` : ''}
         <div class="result-chips">
           ${c.results.map((r) => html`
             <div class="result-chip">
@@ -704,24 +699,16 @@ export class AppHistory extends LitElement {
   }
 
   private _renderEntry(entry: TimelineEntry) {
-    let typeClass = '';
-    if (entry.kind === 'session') {
-      const s = entry.data as Session;
-      typeClass = `session-${s.type}`;
-    } else if (entry.kind === 'competition') {
-      typeClass = 'competition';
-    } else if (entry.kind === 'breathing') {
-      typeClass = 'breathing';
-    }
-
     return html`
-      <div class="timeline-entry ${typeClass}">
+      <div class="timeline-entry">
         ${entry.kind === 'session'
           ? this._renderSession(entry.data as Session)
           : entry.kind === 'pb'
           ? this._renderPB(entry.data as PBRecord)
           : entry.kind === 'breathing'
           ? this._renderBreathingSession(entry.data as BreathingSession)
+          : entry.kind === 'free'
+          ? this._renderFreeSession(entry.data as FreeSession)
           : this._renderCompetition(entry.data as Competition)}
       </div>
     `;
@@ -729,8 +716,13 @@ export class AppHistory extends LitElement {
 
   render() {
     const entries = this._filtered;
-    const totalSessions = this._sessions.length;
+    const groups = this._groupEntries(entries);
+    const totalTraining = this._sessions.filter((session) => session.type !== 'pb-test').length
+      + this._breathingSessions.length
+      + this._freeSessions.length;
     const totalComps = this._competitions.length;
+    const totalPB = this._pbHistory.length
+      + this._sessions.filter((session) => session.type === 'pb-test').length;
 
     return html`
       <div class="page">
@@ -740,21 +732,17 @@ export class AppHistory extends LitElement {
         </div>
 
         <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-value">${totalSessions}</div>
-            <div class="stat-label">${msg('Sessions')}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">${this._breathingSessions.length}</div>
-            <div class="stat-label">${msg('Breathing')}</div>
+          <div class="stat-card training">
+            <div class="stat-value">${totalTraining}</div>
+            <div class="stat-label">${msg('Training')}</div>
           </div>
           <div class="stat-card">
             <div class="stat-value">${totalComps}</div>
             <div class="stat-label">${msg('Competitions')}</div>
           </div>
           <div class="stat-card">
-            <div class="stat-value">${this._pbHistory.length}</div>
-            <div class="stat-label">${msg('PB Records')}</div>
+            <div class="stat-value">${totalPB}</div>
+            <div class="stat-label">${msg('PB')}</div>
           </div>
         </div>
 
@@ -765,12 +753,11 @@ export class AppHistory extends LitElement {
           >${msg('All')}</button>
           <button
             class="tab-btn ${this._filter === 'training' ? 'active' : ''}"
-            @click=${() => { this._filter = 'training'; }}
+            @click=${() => {
+              this._filter = 'training';
+              this._trainingFilter = 'all';
+            }}
           >${msg('Training')}</button>
-          <button
-            class="tab-btn ${this._filter === 'breathing' ? 'active' : ''}"
-            @click=${() => { this._filter = 'breathing'; }}
-          >${msg('Breathing')}</button>
           <button
             class="tab-btn ${this._filter === 'competitions' ? 'active' : ''}"
             @click=${() => { this._filter = 'competitions'; }}
@@ -781,11 +768,45 @@ export class AppHistory extends LitElement {
           >${msg('PB')}</button>
         </div>
 
+        ${this._filter === 'training'
+          ? html`
+              <div class="subfilters">
+                <button
+                  class="subfilter-btn ${this._trainingFilter === 'all' ? 'active' : ''}"
+                  @click=${() => { this._trainingFilter = 'all'; }}
+                >${msg('All')}</button>
+                <button
+                  class="subfilter-btn ${this._trainingFilter === 'breathing' ? 'active' : ''}"
+                  @click=${() => { this._trainingFilter = 'breathing'; }}
+                >${msg('Breathing')}</button>
+                <button
+                  class="subfilter-btn ${this._trainingFilter === 'co2' ? 'active' : ''}"
+                  @click=${() => { this._trainingFilter = 'co2'; }}
+                >${msg('CO2')}</button>
+                <button
+                  class="subfilter-btn ${this._trainingFilter === 'o2' ? 'active' : ''}"
+                  @click=${() => { this._trainingFilter = 'o2'; }}
+                >${msg('O2')}</button>
+                <button
+                  class="subfilter-btn ${this._trainingFilter === 'free' ? 'active' : ''}"
+                  @click=${() => { this._trainingFilter = 'free'; }}
+                >${msg('Free', { id: 'free-tab' })}</button>
+              </div>
+            `
+          : ''}
+
         ${entries.length === 0
           ? html`<div class="empty-state">${msg('Nothing here yet.')}</div>`
           : html`
               <div class="timeline">
-                ${entries.map((e) => this._renderEntry(e))}
+                ${groups.map((group) => html`
+                  <section class="timeline-group">
+                    <div class="timeline-date">${group.label}</div>
+                    <div class="timeline-group-items">
+                      ${group.entries.map((entry) => this._renderEntry(entry))}
+                    </div>
+                  </section>
+                `)}
               </div>
             `}
       </div>

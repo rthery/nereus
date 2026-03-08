@@ -9,6 +9,7 @@ import { registerSW } from 'virtual:pwa-register'
 export class PwaBadge extends LitElement {
     private _period = 60 * 60 * 1000 // check for updates every hour
     private _swActivated = false
+    private _updateIntervalId: ReturnType<typeof setInterval> | null = null
     @state()
     private _offlineReady = false
     @state()
@@ -22,6 +23,14 @@ export class PwaBadge extends LitElement {
             onNeedRefresh: () => (this._needRefresh = true),
             onRegisteredSW: this._onRegisteredSW
         })
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback()
+        if (this._updateIntervalId !== null) {
+            clearInterval(this._updateIntervalId)
+            this._updateIntervalId = null
+        }
     }
 
     render() {
@@ -86,8 +95,9 @@ export class PwaBadge extends LitElement {
 
     private _registerPeriodicSync(swUrl: string, r: ServiceWorkerRegistration) {
         if (this._period <= 0) return
+        if (this._updateIntervalId !== null) return
 
-        setInterval(async () => {
+        this._updateIntervalId = setInterval(async () => {
             if ('onLine' in navigator && !navigator.onLine)
                 return
 

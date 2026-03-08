@@ -66,7 +66,6 @@ function phaseTypeIcon(type: FreePhaseType) {
 export class AppFreeTimer extends LitElement {
   @property({ attribute: false }) sessionData: { preset: FreePreset } | null = null;
 
-  @state() private _state: FreeTimerState | null = null;
   @state() private _started = false;
   @state() private _completed = false;
   @state() private _running = false;
@@ -75,11 +74,13 @@ export class AppFreeTimer extends LitElement {
   @state() private _elapsedWallSeconds = 0;
   @state() private _developerMode = false;
 
+  private _state: FreeTimerState | null = null;
   private _engine: FreeEngine | null = null;
   private _wakeLock: WakeLockSentinel | null = null;
   private _sessionStartTime = 0;
   private _wallInterval: ReturnType<typeof setInterval> | null = null;
   private _rafId: number | null = null;
+  private _ringElement: SVGCircleElement | null = null;
 
   // SVG ring constants
   private static readonly RING_R = 110;
@@ -403,6 +404,7 @@ export class AppFreeTimer extends LitElement {
     this._releaseWakeLock();
     this._clearWallInterval();
     this._stopRaf();
+    this._ringElement = null;
   }
 
   private async _loadSettings(): Promise<void> {
@@ -437,12 +439,14 @@ export class AppFreeTimer extends LitElement {
     const C = AppFreeTimer.CIRCUMFERENCE;
     const frame = () => {
       if (!this._engine) { this._rafId = null; return; }
+      if (!this._ringElement) {
+        this._ringElement = this.shadowRoot?.querySelector<SVGCircleElement>('.ring-progress') ?? null;
+      }
       const s = this._engine.state;
-      if (s.phase.mode === 'duration' && s.phaseDuration > 0) {
+      if (this._ringElement && s.phase.mode === 'duration' && s.phaseDuration > 0) {
         const progress = Math.min(s.elapsed / s.phaseDuration, 1);
         const dashoffset = C * (1 - progress);
-        const ring = this.shadowRoot?.querySelector<SVGCircleElement>('.ring-progress');
-        if (ring) ring.setAttribute('stroke-dashoffset', dashoffset.toFixed(1));
+        this._ringElement.setAttribute('stroke-dashoffset', dashoffset.toFixed(1));
       }
       this._rafId = requestAnimationFrame(frame);
     };
@@ -456,12 +460,31 @@ export class AppFreeTimer extends LitElement {
     }
   }
 
+  private _setState(next: FreeTimerState, force = false): void {
+    const prev = this._state;
+    this._state = next;
+    if (
+      force ||
+      !prev ||
+      prev.remaining !== next.remaining ||
+      prev.running !== next.running ||
+      prev.waitingForTap !== next.waitingForTap ||
+      prev.round !== next.round ||
+      prev.phaseIndex !== next.phaseIndex ||
+      prev.phase !== next.phase ||
+      prev.completed !== next.completed
+    ) {
+      this.requestUpdate();
+    }
+  }
+
   // ---- Timer control ----
   private _start(): void {
     if (!this.sessionData) return;
     ensureAudioContext();
     this._started = true;
     this._sessionStartTime = Date.now();
+    this._ringElement = null;
     void this._acquireWakeLock();
 
     const { preset } = this.sessionData;
@@ -470,7 +493,7 @@ export class AppFreeTimer extends LitElement {
       phases: preset.phases,
       totalRounds: preset.rounds,
       onTick: (s) => {
-        this._state = s;
+        this._setState(s);
         this._running = s.running;
       },
       onPhaseChange: (phase) => {
@@ -486,7 +509,7 @@ export class AppFreeTimer extends LitElement {
       },
     });
 
-    this._state = this._engine.state;
+    this._setState(this._engine.state, true);
     this._running = true;
     this._engine.start();
     this._startRaf();
@@ -502,6 +525,7 @@ export class AppFreeTimer extends LitElement {
     this._releaseWakeLock();
     this._clearWallInterval();
     this._stopRaf();
+    this._ringElement = null;
     if (this._soundEnabled) playCompleteChime();
     if (this._vibrationEnabled) vibrateComplete();
     void this._saveSession(completed);
@@ -532,13 +556,14 @@ export class AppFreeTimer extends LitElement {
     } else {
       this._engine.resume();
       this._running = true;
+      this._ringElement = null;
       this._startRaf();
     }
   }
 
   private _tap(): void {
     this._engine?.advanceManual();
-    if (this._engine) this._state = this._engine.state;
+    if (this._engine) this._setState(this._engine.state, true);
   }
 
   private _abort(): void {
@@ -548,7 +573,7 @@ export class AppFreeTimer extends LitElement {
 
   private _debugSkipPhase(): void {
     this._engine?.skipPhase();
-    if (this._engine) this._state = this._engine.state;
+    if (this._engine) this._setState(this._engine.state, true);
   }
 
   private _debugComplete(): void {

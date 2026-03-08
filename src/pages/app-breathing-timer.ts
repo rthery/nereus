@@ -40,6 +40,7 @@ export class AppBreathingTimer extends LitElement {
   private _sessionStartTime = 0;
   private _wallInterval: ReturnType<typeof setInterval> | null = null;
   private _rafId: number | null = null;
+  private _fillCircle: SVGCircleElement | null = null;
 
   private static readonly MIN_R = 58;
   private static readonly MAX_R = 118;
@@ -327,6 +328,7 @@ export class AppBreathingTimer extends LitElement {
     this._releaseWakeLock();
     this._clearWallInterval();
     this._stopRaf();
+    this._fillCircle = null;
   }
 
   private async _loadSettings(): Promise<void> {
@@ -360,6 +362,9 @@ export class AppBreathingTimer extends LitElement {
     const { MIN_R, MAX_R } = AppBreathingTimer;
     const frame = () => {
       if (!this._engine) { this._rafId = null; return; }
+      if (!this._fillCircle) {
+        this._fillCircle = this.shadowRoot?.querySelector<SVGCircleElement>('.breath-fill') ?? null;
+      }
       const s = this._engine.state;
       const progress = s.phaseDuration > 0 ? Math.min(s.elapsed / s.phaseDuration, 1) : 1;
 
@@ -371,8 +376,7 @@ export class AppBreathingTimer extends LitElement {
         case 'hold-out': r = MIN_R; break;
       }
 
-      const circle = this.shadowRoot?.querySelector<SVGCircleElement>('.breath-fill');
-      if (circle) circle.setAttribute('r', r.toFixed(1));
+      if (this._fillCircle) this._fillCircle.setAttribute('r', r.toFixed(1));
 
       this._rafId = requestAnimationFrame(frame);
     };
@@ -392,6 +396,7 @@ export class AppBreathingTimer extends LitElement {
     ensureAudioContext();
     this._started = true;
     this._sessionStartTime = Date.now();
+    this._fillCircle = null;
     void this._acquireWakeLock();
 
     const { preset, durationMode, totalCycles, totalMinutes } = this.sessionConfig;
@@ -450,6 +455,7 @@ export class AppBreathingTimer extends LitElement {
     this._releaseWakeLock();
     this._clearWallInterval();
     this._stopRaf();
+    this._fillCircle = null;
     if (this._soundEnabled) playCompleteChime();
     if (this._vibrationEnabled) vibrateComplete();
     void this._saveSession(completed);
@@ -478,6 +484,7 @@ export class AppBreathingTimer extends LitElement {
     } else {
       this._engine.resume();
       this._running = true;
+      this._fillCircle = null;
       this._startRaf();
     }
   }

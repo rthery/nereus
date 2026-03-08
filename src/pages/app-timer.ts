@@ -47,6 +47,7 @@ export class AppTimer extends LitElement {
   private _engine: TimerEngine | null = null;
   private _wakeLock: WakeLockSentinel | null = null;
   private _rafId: number | null = null;
+  private _ringElement: SVGCircleElement | null = null;
   private static readonly _circumference = 2 * Math.PI * 125;
 
   static styles = [
@@ -421,6 +422,7 @@ export class AppTimer extends LitElement {
     this._engine?.destroy();
     this._releaseWakeLock();
     this._stopRaf();
+    this._ringElement = null;
   }
 
   private async _loadSettings(): Promise<void> {
@@ -450,11 +452,13 @@ export class AppTimer extends LitElement {
     const C = AppTimer._circumference;
     const frame = () => {
       if (!this._engine) { this._rafId = null; return; }
+      if (!this._ringElement) {
+        this._ringElement = this.shadowRoot?.querySelector<SVGCircleElement>('.timer-ring-progress') ?? null;
+      }
       const s = this._engine.state;
       const progress = s.phaseDuration > 0 ? Math.min(s.elapsed / s.phaseDuration, 1) : 0;
       const dashOffset = C * (1 - progress);
-      const ring = this.shadowRoot?.querySelector<SVGCircleElement>('.timer-ring-progress');
-      if (ring) ring.setAttribute('stroke-dashoffset', dashOffset.toFixed(1));
+      if (this._ringElement) this._ringElement.setAttribute('stroke-dashoffset', dashOffset.toFixed(1));
       this._rafId = requestAnimationFrame(frame);
     };
     this._rafId = requestAnimationFrame(frame);
@@ -472,6 +476,7 @@ export class AppTimer extends LitElement {
 
     ensureAudioContext();
     this._started = true;
+    this._ringElement = null;
     this._acquireWakeLock();
 
     this._engine = new TimerEngine({
@@ -521,6 +526,7 @@ export class AppTimer extends LitElement {
     } else {
       this._engine.resume();
       this._running = true;
+      this._ringElement = null;
       this._startRaf();
     }
   }
@@ -531,6 +537,7 @@ export class AppTimer extends LitElement {
     this._running = false;
     this._releaseWakeLock();
     this._stopRaf();
+    this._ringElement = null;
     this._saveSession(false);
   }
 
@@ -541,6 +548,7 @@ export class AppTimer extends LitElement {
     this._running = false;
     this._releaseWakeLock();
     this._stopRaf();
+    this._ringElement = null;
     void this._saveSession(true);
   }
 

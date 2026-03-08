@@ -35,10 +35,17 @@ export class AppHistory extends LitElement {
   @state() private _pbHistory: PBRecord[] = [];
   @state() private _competitions: Competition[] = [];
   @state() private _breathingSessions: BreathingSession[] = [];
+  @state() private _timelineEntries: TimelineEntry[] = [];
   @state() private _filter: FilterType = 'all';
   @state() private _editingPBDate: number | null = null;
   @state() private _editPBMin = 0;
   @state() private _editPBSec = 0;
+
+  private _formatLocale = '';
+  private _dateTimeFormatter: Intl.DateTimeFormat | null = null;
+  private _dateFormatter: Intl.DateTimeFormat | null = null;
+  private _dateTimeCache = new Map<number, string>();
+  private _dateCache = new Map<number, string>();
 
   static styles = [
     sharedStyles,
@@ -440,26 +447,48 @@ export class AppHistory extends LitElement {
     } catch {
       this._breathingSessions = [];
     }
+    this._rebuildTimeline();
   }
 
-  private get _timeline(): TimelineEntry[] {
+  private _rebuildTimeline(): void {
     const entries: TimelineEntry[] = [
       ...this._sessions.map((s): TimelineEntry => ({ kind: 'session', date: s.date, data: s })),
       ...this._pbHistory.map((p): TimelineEntry => ({ kind: 'pb', date: p.date, data: p })),
       ...this._competitions.map((c): TimelineEntry => ({ kind: 'competition', date: c.date, data: c })),
       ...this._breathingSessions.map((b): TimelineEntry => ({ kind: 'breathing', date: b.date, data: b })),
     ];
-    return entries.sort((a, b) => b.date - a.date);
+    this._timelineEntries = entries.sort((a, b) => b.date - a.date);
   }
 
   private get _filtered(): TimelineEntry[] {
-    const all = this._timeline;
+    const all = this._timelineEntries;
     if (this._filter === 'all') return all;
     if (this._filter === 'training') return all.filter((e) => e.kind === 'session');
     if (this._filter === 'breathing') return all.filter((e) => e.kind === 'breathing');
     if (this._filter === 'competitions') return all.filter((e) => e.kind === 'competition');
     if (this._filter === 'pb') return all.filter((e) => e.kind === 'pb');
     return all;
+  }
+
+  private _ensureFormatters(): void {
+    const locale = getLocale();
+    if (locale === this._formatLocale && this._dateTimeFormatter && this._dateFormatter) return;
+
+    this._formatLocale = locale;
+    this._dateTimeFormatter = new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    this._dateFormatter = new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+    this._dateTimeCache.clear();
+    this._dateCache.clear();
   }
 
   private async _deleteSession(id: string): Promise<void> {
@@ -503,21 +532,23 @@ export class AppHistory extends LitElement {
   }
 
   private _formatDate(ts: number): string {
-    return new Date(ts).toLocaleDateString(getLocale(), {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    this._ensureFormatters();
+    const cached = this._dateTimeCache.get(ts);
+    if (cached) return cached;
+
+    const formatted = this._dateTimeFormatter!.format(new Date(ts));
+    this._dateTimeCache.set(ts, formatted);
+    return formatted;
   }
 
   private _formatDateShort(ts: number): string {
-    return new Date(ts).toLocaleDateString(getLocale(), {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    this._ensureFormatters();
+    const cached = this._dateCache.get(ts);
+    if (cached) return cached;
+
+    const formatted = this._dateFormatter!.format(new Date(ts));
+    this._dateCache.set(ts, formatted);
+    return formatted;
   }
 
   private _renderSession(s: Session) {

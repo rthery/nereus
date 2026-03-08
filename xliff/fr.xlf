@@ -780,6 +780,182 @@
   <source>No sessions yet. Start your first training!</source>
   <target>Aucune session pour l'instant. Commencez votre premier entraînement !</target>
 </trans-unit>
+<trans-unit id="free-type-breathing">
+  <source>Breathing</source>
+  <target>Respiration</target>
+</trans-unit>
+<trans-unit id="free-type-inhale">
+  <source>Inhale</source>
+  <target>Inspiration</target>
+</trans-unit>
+<trans-unit id="free-type-apnea-full">
+  <source>Apnea (full)</source>
+  <target>Apnée (poumons pleins)</target>
+</trans-unit>
+<trans-unit id="free-type-exhale">
+  <source>Exhale</source>
+  <target>Expiration</target>
+</trans-unit>
+<trans-unit id="free-type-apnea-empty">
+  <source>Apnea (empty)</source>
+  <target>Apnée (poumons vides)</target>
+</trans-unit>
+<trans-unit id="free-type-activity">
+  <source>Activity</source>
+  <target>Activité</target>
+</trans-unit>
+<trans-unit id="free-tab-tooltip">
+  <source>Build your own training flow with breathing, apnea, activity, and count phases. Save presets to repeat the same routine anytime.</source>
+  <target>Créez votre propre enchaînement avec des phases de respiration, d'apnée, d'activité et de répétitions. Enregistrez des programmes pour refaire la même routine à tout moment.</target>
+</trans-unit>
+<trans-unit id="free-untitled">
+  <source>Untitled</source>
+  <target>Sans titre</target>
+</trans-unit>
+<trans-unit id="free-meta-varies-round">
+  <source>Varies / round</source>
+  <target>Variable / série</target>
+</trans-unit>
+<trans-unit id="free-meta-round-duration">
+  <source>~<x id="0" equiv-text="${formatFreeCardDuration(roundSeconds)}"/> / round</source>
+  <target>~<x id="0" equiv-text="${formatFreeCardDuration(roundSeconds)}"/> / série</target>
+</trans-unit>
+<trans-unit id="free-no-presets">
+  <source>No presets yet.</source>
+  <target>Aucun programme pour l'instant.</target>
+</trans-unit>
+<trans-unit id="free-empty-hint">
+  <source>Create your first free training preset.</source>
+  <target>Créez votre premier programme libre.</target>
+</trans-unit>
+<trans-unit id="free-edit">
+  <source>Edit</source>
+  <target>Modifier</target>
+</trans-unit>
+<trans-unit id="free-label-placeholder">
+  <source>Phase name</source>
+  <target>Nom de phase</target>
+</trans-unit>
+<trans-unit id="free-total-hint">
+  <source>~<x id="0" equiv-text="${formatTime(totalSec)}"/> total</source>
+  <target>~<x id="0" equiv-text="${formatTime(totalSec)}"/> au total</target>
+</trans-unit>
+<trans-unit id="free-total-hint-count">
+  <source>Duration varies (count phases)</source>
+  <target>Durée variable (phases à répétitions)</target>
+</trans-unit>
+<trans-unit id="free-edit-title">
+  <source>Edit preset</source>
+  <target>Modifier le programme</target>
+</trans-unit>
+<trans-unit id="free-new-title">
+  <source>New preset</source>
+  <target>Nouveau programme</target>
+</trans-unit>
+<trans-unit id="free-name-placeholder">
+  <source>Preset name</source>
+  <target>Nom du programme</target>
+</trans-unit>
+<trans-unit id="free-phases-label">
+  <source>Phases</source>
+  <target>Phases</target>
+</trans-unit>
+<trans-unit id="free-add-phase">
+  <source>Add phase</source>
+  <target>Ajouter une phase</target>
+</trans-unit>
+<trans-unit id="free-rounds">
+  <source>Rounds</source>
+  <target>Séries</target>
+</trans-unit>
+<trans-unit id="free-rounds-unit">
+  <source>rounds</source>
+  <target>séries</target>
+</trans-unit>
+<trans-unit id="free-title">
+  <source>Free Training</source>
+  <target>Entraînement libre</target>
+</trans-unit>
+<trans-unit id="free-new-btn">
+  <source>New preset</source>
+  <target>Nouveau programme</target>
+</trans-unit>
+<trans-unit id="free-cancel">
+  <source>Cancel</source>
+  <target>Annuler</target>
+</trans-unit>
+<trans-unit id="free-save">
+  <source>Save</source>
+  <target>Enregistrer</target>
+</trans-unit>
+<trans-unit id="free-start">
+  <source>Start</source>
+  <target>Démarrer</target>
+</trans-unit>
+<trans-unit id="free-no-session">
+  <source>No session configured</source>
+  <target>Aucune session configurée</target>
+</trans-unit>
+<trans-unit id="free-go-back">
+  <source>Go back</source>
+  <target>Retour</target>
+</trans-unit>
+<trans-unit id="free-pre-meta">
+  <source><x id="0" equiv-text="${preset.phases.length}"/> phases × <x id="1" equiv-text="${preset.rounds}"/> rounds</source>
+  <target><x id="0" equiv-text="${preset.phases.length}"/> phases × <x id="1" equiv-text="${preset.rounds}"/> séries</target>
+</trans-unit>
+<trans-unit id="free-pre-meta-single">
+  <source><x id="0" equiv-text="${preset.phases.length}"/> phases</source>
+  <target><x id="0" equiv-text="${preset.phases.length}"/> phases</target>
+</trans-unit>
+<trans-unit id="free-begin">
+  <source>Begin</source>
+  <target>Commencer</target>
+</trans-unit>
+<trans-unit id="free-complete">
+  <source>Session Complete</source>
+  <target>Séance terminée</target>
+</trans-unit>
+<trans-unit id="free-stat-duration">
+  <source>Duration</source>
+  <target>Durée</target>
+</trans-unit>
+<trans-unit id="free-stat-rounds">
+  <source>Rounds</source>
+  <target>Séries</target>
+</trans-unit>
+<trans-unit id="free-done">
+  <source>Done</source>
+  <target>Terminer</target>
+</trans-unit>
+<trans-unit id="free-round-info">
+  <source>Round <x id="0" equiv-text="${s.round}"/> / <x id="1" equiv-text="${s.totalRounds}"/>  •  Phase <x id="2" equiv-text="${s.phaseIndex + 1}"/> / <x id="3" equiv-text="${preset.phases.length}"/></source>
+  <target>Série <x id="0" equiv-text="${s.round}"/> / <x id="1" equiv-text="${s.totalRounds}"/>. Phase <x id="2" equiv-text="${s.phaseIndex + 1}"/> / <x id="3" equiv-text="${preset.phases.length}"/></target>
+</trans-unit>
+<trans-unit id="free-phase-info">
+  <source>Phase <x id="0" equiv-text="${s.phaseIndex + 1}"/> / <x id="1" equiv-text="${preset.phases.length}"/></source>
+  <target>Phase <x id="0" equiv-text="${s.phaseIndex + 1}"/> / <x id="1" equiv-text="${preset.phases.length}"/></target>
+</trans-unit>
+<trans-unit id="free-tap">
+  <source>TAP</source>
+  <target>TOUCHER</target>
+</trans-unit>
+<trans-unit id="free-pause">
+  <source>Pause</source>
+  <target>Pause</target>
+</trans-unit>
+<trans-unit id="free-resume">
+  <source>Resume</source>
+  <target>Reprendre</target>
+</trans-unit>
+<trans-unit id="free-stop">
+  <source>Stop</source>
+  <target>Arrêter</target>
+</trans-unit>
+<trans-unit id="free-tab">
+  <source>Free</source>
+  <target>Libre</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

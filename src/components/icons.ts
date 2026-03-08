@@ -44,3 +44,5 @@ export const symbolHoldIn = html`<svg xmlns="http://www.w3.org/2000/svg" width="
 export const symbolHoldOut = html`<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><rect x="1" y="1" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>`;
 // ▲▼ combined breathe (inhale+exhale) — single SVG, triangles close together
 export const symbolBreathe = html`<svg xmlns="http://www.w3.org/2000/svg" width="14" height="12" viewBox="0 0 14 12"><polygon points="0,11 6,11 3,1" fill="currentColor"/><polygon points="8,1 14,1 11,11" fill="currentColor"/></svg>`;
+// ⚡ activity — lightning bolt (zap)
+export const symbolActivity = html`<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M13 2 3 14h7l-1 8 12-14h-7l1-6Z"/></svg>`;

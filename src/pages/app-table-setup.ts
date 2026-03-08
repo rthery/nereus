@@ -15,8 +15,9 @@ import {
 import { navigate } from '../navigation.js';
 import type { TableRound, Difficulty, TableType, RoundCount } from '../types.js';
 import './app-breathing-setup.js';
+import './app-free-setup.js';
 
-type TrainingTab = 'breathing' | TableType;
+type TrainingTab = 'breathing' | TableType | 'free';
 
 @localized()
 @customElement('app-table-setup')
@@ -33,6 +34,7 @@ export class AppTableSetup extends LitElement {
   @state() private _table: TableRound[] = [];
   @state() private _showTooltip = false;
   @state() private _showBreathingTooltip = false;
+  @state() private _showFreeTooltip = false;
   @state() private _showDiffTooltip = false;
 
   static styles = [
@@ -62,6 +64,7 @@ export class AppTableSetup extends LitElement {
       .page-title.co2 { color: var(--color-hold); }
       .page-title.o2 { color: var(--color-breathe); }
       .page-title.breathing { color: var(--color-rest); }
+      .page-title.free { color: var(--color-activity); }
 
       .tabs {
         display: flex;
@@ -407,13 +410,14 @@ export class AppTableSetup extends LitElement {
     }
   }
 
-  /** Switch between Breathing / CO2 / O2 tabs (only on /training without mode prop). */
+  /** Switch between Breathing / CO2 / O2 / Free tabs (only on /training without mode prop). */
   private _switchTab(tab: TrainingTab): void {
     this._activeTab = tab;
     this._showTooltip = false;
     this._showBreathingTooltip = false;
+    this._showFreeTooltip = false;
     this._showDiffTooltip = false;
-    if (tab !== 'breathing') {
+    if (tab === 'co2' || tab === 'o2') {
       this._mode = tab;
       void this._load();
     }
@@ -523,6 +527,10 @@ export class AppTableSetup extends LitElement {
           class="tab-btn ${this._activeTab === 'o2' ? 'active' : ''}"
           @click=${() => this._switchTab('o2')}
         >O2</button>
+        <button
+          class="tab-btn ${this._activeTab === 'free' ? 'active' : ''}"
+          @click=${() => this._switchTab('free')}
+        >${msg('Free', { id: 'free-tab' })}</button>
       </div>
     `;
   }
@@ -559,6 +567,30 @@ export class AppTableSetup extends LitElement {
           ` : ''}
         </div>
         <app-breathing-setup embedded></app-breathing-setup>
+      `;
+    }
+
+    // Free tab — inline free setup
+    if (this._activeTab === 'free' && !this.mode) {
+      return html`
+        <div class="tabs-header">
+          ${this._renderPageHeader()}
+          ${this._renderModeTabs()}
+          <div class="page-header">
+            <h1 class="page-title free">${msg('Free', { id: 'free-tab' })}</h1>
+            <button
+              class="info-btn ${this._showFreeTooltip ? 'active' : ''}"
+              @click=${() => { this._showFreeTooltip = !this._showFreeTooltip; }}
+              aria-label="Info"
+            >${iconInfo}</button>
+          </div>
+          ${this._showFreeTooltip ? html`
+            <div class="info-tooltip">
+              ${msg('Build your own training flow with breathing, apnea, activity, and count phases. Save presets to repeat the same routine anytime.', { id: 'free-tab-tooltip' })}
+            </div>
+          ` : ''}
+        </div>
+        <app-free-setup embedded></app-free-setup>
       `;
     }
 

@@ -8,7 +8,7 @@ import type { ThemePreference } from './types.js';
 import './components/app-nav.js';
 import './pwa-badge.js';
 
-type AppRoute = '/' | '/co2' | '/o2' | '/training' | '/timer' | '/pb-test' | '/history' | '/competitions' | '/settings' | '/breathing' | '/breathing-timer';
+type AppRoute = '/' | '/co2' | '/o2' | '/training' | '/timer' | '/pb-test' | '/history' | '/competitions' | '/settings' | '/breathing' | '/breathing-timer' | '/free-timer';
 
 @localized()
 @customElement('app-shell')
@@ -196,6 +196,9 @@ export class AppShell extends LitElement {
       case '/breathing-timer':
         import('./pages/app-breathing-timer.js');
         return html`<app-breathing-timer .sessionConfig=${this._timerData}></app-breathing-timer>`;
+      case '/free-timer':
+        import('./pages/app-free-timer.js');
+        return html`<app-free-timer .sessionData=${this._timerData}></app-free-timer>`;
       case '/competitions':
         import('./pages/app-competitions.js');
         return html`<app-competitions></app-competitions>`;
@@ -217,7 +220,7 @@ export class AppShell extends LitElement {
   render() {
     if (!this._ready) return html``;
 
-    const hideNav = this._route === '/timer' || this._route === '/breathing-timer';
+    const hideNav = this._route === '/timer' || this._route === '/breathing-timer' || this._route === '/free-timer';
 
     return html`
       ${!this._safetyAcknowledged

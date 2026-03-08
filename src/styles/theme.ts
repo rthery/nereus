@@ -19,6 +19,8 @@ export const themeStyles = css`
     --color-hold-bg: rgba(255, 152, 0, 0.12);
     --color-rest: #4caf50;
     --color-rest-bg: rgba(76, 175, 80, 0.12);
+    --color-activity: #ab47bc;
+    --color-activity-bg: rgba(171, 71, 188, 0.12);
     --color-danger: #ef5350;
     --color-success: #66bb6a;
     --color-border: rgba(139, 159, 194, 0.15);
@@ -69,6 +71,8 @@ export const themeStyles = css`
     --color-hold-bg: rgba(230, 81, 0, 0.08);
     --color-rest: #388e3c;
     --color-rest-bg: rgba(56, 142, 60, 0.08);
+    --color-activity: #8e24aa;
+    --color-activity-bg: rgba(142, 36, 170, 0.08);
     --color-danger: #d32f2f;
     --color-success: #388e3c;
     --color-border: rgba(0, 0, 0, 0.1);

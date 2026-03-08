@@ -1,8 +1,8 @@
 import { openDB, type IDBPDatabase } from 'idb';
-import { DEFAULT_SETTINGS, type Settings, type Session, type PBRecord, type Competition, type BreathingSession } from '../types.js';
+import { DEFAULT_SETTINGS, type Settings, type Session, type PBRecord, type Competition, type BreathingSession, type FreePreset, type FreeSession } from '../types.js';
 
 const DB_NAME = 'nereus';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
 
@@ -35,6 +35,15 @@ function getDB(): Promise<IDBPDatabase> {
         if (oldVersion < 3) {
           if (!db.objectStoreNames.contains('breathing-sessions')) {
             const store = db.createObjectStore('breathing-sessions', { keyPath: 'id' });
+            store.createIndex('date', 'date');
+          }
+        }
+        if (oldVersion < 4) {
+          if (!db.objectStoreNames.contains('free-presets')) {
+            db.createObjectStore('free-presets', { keyPath: 'id' });
+          }
+          if (!db.objectStoreNames.contains('free-sessions')) {
+            const store = db.createObjectStore('free-sessions', { keyPath: 'id' });
             store.createIndex('date', 'date');
           }
         }
@@ -153,16 +162,61 @@ export async function deleteBreathingSession(id: string): Promise<void> {
   await db.delete('breathing-sessions', id);
 }
 
+// Free presets
+export async function getFreePresets(): Promise<FreePreset[]> {
+  try {
+    const db = await getDB();
+    return await db.getAll('free-presets');
+  } catch { return []; }
+}
+
+export async function saveFreePreset(preset: FreePreset): Promise<void> {
+  try {
+    const db = await getDB();
+    await db.put('free-presets', preset);
+  } catch { /* store not available yet */ }
+}
+
+export async function deleteFreePreset(id: string): Promise<void> {
+  try {
+    const db = await getDB();
+    await db.delete('free-presets', id);
+  } catch { /* store not available yet */ }
+}
+
+// Free sessions
+export async function saveFreeSession(session: FreeSession): Promise<void> {
+  try {
+    const db = await getDB();
+    await db.put('free-sessions', session);
+  } catch { /* store not available yet */ }
+}
+
+export async function getFreeSessions(limit = 100): Promise<FreeSession[]> {
+  try {
+    const db = await getDB();
+    const all = await db.getAllFromIndex('free-sessions', 'date');
+    return all.reverse().slice(0, limit);
+  } catch { return []; }
+}
+
+export async function deleteFreeSession(id: string): Promise<void> {
+  const db = await getDB();
+  await db.delete('free-sessions', id);
+}
+
 // Reset (for testing)
 export async function clearAllData(): Promise<void> {
   const db = await getDB();
-  const tx = db.transaction(['settings', 'sessions', 'pb-history', 'competitions', 'breathing-sessions'], 'readwrite');
+  const tx = db.transaction(['settings', 'sessions', 'pb-history', 'competitions', 'breathing-sessions', 'free-presets', 'free-sessions'], 'readwrite');
   await Promise.all([
     tx.objectStore('settings').clear(),
     tx.objectStore('sessions').clear(),
     tx.objectStore('pb-history').clear(),
     tx.objectStore('competitions').clear(),
     tx.objectStore('breathing-sessions').clear(),
+    tx.objectStore('free-presets').clear(),
+    tx.objectStore('free-sessions').clear(),
     tx.done,
   ]);
 }

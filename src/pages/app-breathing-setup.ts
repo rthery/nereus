@@ -120,6 +120,8 @@ export class AppBreathingSetup extends LitElement {
 
       .phase-pill svg { width: 9px; height: 9px; flex-shrink: 0; }
 
+      .phase-pill-duration { text-transform: none; }
+
       .phase-pill.inhale {
         background: color-mix(in srgb, var(--color-breathe) 20%, transparent);
         color: var(--color-breathe);
@@ -501,6 +503,11 @@ export class AppBreathingSetup extends LitElement {
     }
   }
 
+  private _presetCycleDuration(preset: BreathingPreset): number {
+    const phases = preset.id === 'custom' ? this._customPhases : preset.phases;
+    return phases.reduce((sum, phase) => sum + phase.duration, 0);
+  }
+
   private _renderPresetPills(preset: BreathingPreset) {
     const phases = preset.id === 'custom' ? this._customPhases : preset.phases;
     return html`
@@ -509,7 +516,7 @@ export class AppBreathingSetup extends LitElement {
           (p) => html`
             <span class="phase-pill ${p.label}">
               ${this._phaseSymbol(p.label)}
-              ${this._phaseLabelText(p.label)} ${p.duration}s
+              ${this._phaseLabelText(p.label)} <span class="phase-pill-duration">${p.duration}s</span>
             </span>`,
         )}
       </div>
@@ -574,9 +581,7 @@ export class AppBreathingSetup extends LitElement {
             >
               <div class="preset-header">
                 <span class="preset-name">${this._presetDisplayName(preset.id)}</span>
-                ${preset.id !== 'custom' ? html`
-                  <span class="preset-duration">${cycleDuration(preset)}s / ${msg('cycle')}</span>
-                ` : ''}
+                <span class="preset-duration">${this._presetCycleDuration(preset)}s / ${msg('cycle')}</span>
               </div>
               ${preset.tip ? html`<div class="preset-tip">${preset.tip}</div>` : ''}
               ${this._renderPresetPills(preset)}

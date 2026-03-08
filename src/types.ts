@@ -51,6 +51,7 @@ export interface Settings {
   breathingDurationMode?: 'cycles' | 'minutes';
   breathingCycles?: number;
   breathingMinutes?: number;
+  freeLastPresetId?: string;
   developerMode?: boolean;
 }
 
@@ -163,5 +164,47 @@ export interface BreathingSession {
   presetName: string;
   completedCycles: number;
   totalDuration: number; // seconds elapsed
+  completed: boolean;
+}
+
+// ---- Free Training ----
+
+/** Semantic type of a free training phase — drives color coding. */
+export type FreePhaseType =
+  | 'breathing'
+  | 'inhale'
+  | 'apnea-full'
+  | 'exhale'
+  | 'apnea-empty'
+  | 'activity';
+
+export interface FreePhase {
+  type: FreePhaseType;
+  /** 'duration' = auto-advance by countdown; 'count' = user taps N times to advance. */
+  mode: 'duration' | 'count';
+  /** Seconds (mode === 'duration'). */
+  duration?: number;
+  /** Number of taps (mode === 'count'). */
+  count?: number;
+  /** User-defined phase name, e.g. "EP", "PV", "CR". */
+  label: string;
+}
+
+export interface FreePreset {
+  id: string;
+  name: string;
+  phases: FreePhase[];
+  /** How many times the full phase sequence repeats. */
+  rounds: number;
+}
+
+export interface FreeSession {
+  id: string;
+  date: number;
+  presetId?: string;
+  presetName: string;
+  completedRounds: number;
+  totalRounds: number;
+  totalDuration: number; // seconds
   completed: boolean;
 }

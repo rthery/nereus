@@ -6,14 +6,9 @@
   <source>Safety Notice</source>
   <target>Avis de sécurité</target>
 </trans-unit>
-<trans-unit id="hed296358d43bfc35">
-  <source>Breath-hold training carries inherent risks. Before using this app, please
-                  be aware of the following:</source>
-  <target>L'entraînement en apnée comporte des risques inhérents. Avant d'utiliser cette application, veuillez prendre connaissance des points suivants :</target>
-</trans-unit>
-<trans-unit id="hf16a61279a336cea">
-  <source><x id="0" equiv-text="&lt;strong&gt;"/>Never train in water alone<x id="1" equiv-text="&lt;/strong&gt;"/> - dry (on land) training is recommended for solo practice</source>
-  <target><x id="0" equiv-text="&lt;strong&gt;"/>Ne vous entraînez jamais dans l'eau seul(e)<x id="1" equiv-text="&lt;/strong&gt;"/> - l'entraînement à sec est recommandé pour la pratique en solo</target>
+<trans-unit id="safety-never-train-alone-position">
+  <source><x id="0" equiv-text="&lt;strong&gt;"/>Never train alone<x id="1" equiv-text="&lt;/strong&gt;"/> in water or dry (on land). For dry training, lie on your back or sit fully supported in a stable chair so you cannot fall if you get lightheaded or lose control.</source>
+  <target><x id="0" equiv-text="&lt;strong&gt;"/>Ne vous entraînez jamais seul(e)<x id="1" equiv-text="&lt;/strong&gt;"/> dans l'eau ou à sec (sur terre). Pour l'entraînement à sec, allongez-vous sur le dos ou asseyez-vous avec un appui complet sur une chaise stable afin de ne pas pouvoir tomber si vous avez des vertiges ou perdez le contrôle.</target>
 </trans-unit>
 <trans-unit id="h6470f74dceda4fd1">
   <source><x id="0" equiv-text="&lt;strong&gt;"/>Never hyperventilate<x id="1" equiv-text="&lt;/strong&gt;"/> before breath holds</source>
@@ -30,10 +25,6 @@
 <trans-unit id="h9523acd95d3d7a06">
   <source><x id="0" equiv-text="&lt;strong&gt;"/>Consult a doctor<x id="1" equiv-text="&lt;/strong&gt;"/> if you have cardiovascular, respiratory, or neurological conditions</source>
   <target><x id="0" equiv-text="&lt;strong&gt;"/>Consultez un médecin<x id="1" equiv-text="&lt;/strong&gt;"/> si vous souffrez de troubles cardiovasculaires, respiratoires ou neurologiques</target>
-</trans-unit>
-<trans-unit id="s57efecd546de5452">
-  <source>This app is designed for dry (land-based) static apnea training only.</source>
-  <target>Cette application est conçue uniquement pour l'entraînement en apnée statique à sec.</target>
 </trans-unit>
 <trans-unit id="s398d2bf04fd254e5">
   <source>I understand and accept</source>

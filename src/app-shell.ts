@@ -4,6 +4,7 @@ import { localized, msg } from '@lit/localize';
 import { themeStyles } from './styles/theme.js';
 import { getSettings, saveSettings } from './services/db.js';
 import { setLocale, detectLocale } from './localization.js';
+import { iconAlertTriangle } from './components/icons.js';
 import type { ThemePreference } from './types.js';
 import './components/app-nav.js';
 import './pwa-badge.js';
@@ -48,41 +49,57 @@ export class AppShell extends LitElement {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: var(--spacing-lg);
+        padding: clamp(var(--spacing-sm), 4vw, var(--spacing-lg));
       }
 
       .safety-dialog {
         background: var(--color-bg-surface);
         border-radius: var(--radius-lg);
-        padding: var(--spacing-xl);
+        padding: clamp(var(--spacing-md), 4vw, var(--spacing-lg));
         max-width: 480px;
         width: 100%;
-        max-height: 80vh;
+        max-height: min(76vh, 76dvh);
         overflow-y: auto;
       }
 
       .safety-dialog h2 {
         color: var(--color-danger);
         font-size: var(--font-xl);
-        margin-bottom: var(--spacing-md);
+        margin: 0 0 var(--spacing-sm);
+      }
+
+      .safety-title {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+      }
+
+      .safety-title svg {
+        width: 18px;
+        height: 18px;
+        flex: none;
       }
 
       .safety-dialog p {
         color: var(--color-text-secondary);
-        line-height: 1.6;
-        margin-bottom: var(--spacing-md);
+        line-height: 1.45;
+        margin: 0 0 var(--spacing-sm);
       }
 
       .safety-dialog ul {
         color: var(--color-text-secondary);
-        line-height: 1.8;
-        margin-bottom: var(--spacing-lg);
+        line-height: 1.55;
+        margin: 0 0 var(--spacing-md);
         padding-left: var(--spacing-lg);
+      }
+
+      .safety-dialog li + li {
+        margin-top: var(--spacing-xs);
       }
 
       .safety-dialog .btn {
         width: 100%;
-        padding: var(--spacing-md);
+        padding: calc(var(--spacing-sm) + 2px) var(--spacing-md);
         background: var(--color-accent);
         color: #fff;
         border: none;
@@ -233,21 +250,19 @@ export class AppShell extends LitElement {
         ? html`
             <div class="safety-overlay">
               <div class="safety-dialog">
-                <h2>${msg('Safety Notice')}</h2>
-                <p>
-                  ${msg(html`Breath-hold training carries inherent risks. Before using this app, please
-                  be aware of the following:`)}
-                </p>
+                <h2 class="safety-title">${iconAlertTriangle}${msg('Safety Notice')}</h2>
                 <ul>
-                  <li>${msg(html`<strong>Never train in water alone</strong> - dry (on land) training is recommended for solo practice`)}</li>
+                  <li>
+                    ${msg(
+                      html`<strong>Never train alone</strong> in water or dry (on land). For dry training, lie on your back or sit fully supported in a stable chair so you cannot fall if you get lightheaded or lose control.`,
+                      { id: 'safety-never-train-alone-position' },
+                    )}
+                  </li>
                   <li>${msg(html`<strong>Never hyperventilate</strong> before breath holds`)}</li>
                   <li>${msg(html`<strong>Stop immediately</strong> if you feel dizzy, see spots, or experience strong involuntary contractions`)}</li>
                   <li>${msg(html`<strong>Do not train</strong> if fatigued, ill, or after consuming alcohol`)}</li>
                   <li>${msg(html`<strong>Consult a doctor</strong> if you have cardiovascular, respiratory, or neurological conditions`)}</li>
                 </ul>
-                <p>
-                  ${msg('This app is designed for dry (land-based) static apnea training only.')}
-                </p>
                 <button class="btn" @click=${this._acknowledgeSafety}>
                   ${msg('I understand and accept')}
                 </button>

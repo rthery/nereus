@@ -51,6 +51,7 @@ export interface Settings {
   breathingDurationMode?: 'cycles' | 'minutes';
   breathingCycles?: number;
   breathingMinutes?: number;
+  developerMode?: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {

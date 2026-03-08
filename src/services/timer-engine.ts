@@ -118,6 +118,27 @@ export class TimerEngine {
     this._completed = true;
   }
 
+  /** DEV only: skip the current phase (breathe→hold, or hold→next round / complete). */
+  skipPhase(): void {
+    if (!this._running || this._completed) return;
+    this._lastCountdown = -1;
+    if (this._phase === 'breathe') {
+      this._phase = 'hold';
+    } else {
+      this._results[this._round].actualHold = this.table[this._round].hold;
+      this._results[this._round].completed = true;
+      if (this._round >= this.table.length - 1) {
+        this.complete();
+        return;
+      }
+      this._round++;
+      this._phase = 'breathe';
+    }
+    this._elapsed = 0;
+    this.phaseStartTimestamp = performance.now();
+    this.onPhaseChange?.(this._phase, this._round);
+  }
+
   private tick(): void {
     const now = performance.now();
     this._elapsed = (now - this.phaseStartTimestamp) / 1000;

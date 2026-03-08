@@ -18,6 +18,7 @@ export class AppSettings extends LitElement {
   @state() private _locale: LocalePreference = 'auto';
   @state() private _pb = 0;
   @state() private _editingPb = false;
+  @state() private _developerMode = false;
 
   static styles = [
     sharedStyles,
@@ -240,6 +241,7 @@ export class AppSettings extends LitElement {
     this._vibrationEnabled = settings.vibrationEnabled;
     this._pb = settings.personalBest;
     this._locale = settings.locale;
+    this._developerMode = settings.developerMode ?? false;
   }
 
   private _setTheme(theme: ThemePreference): void {
@@ -262,6 +264,11 @@ export class AppSettings extends LitElement {
   private async _toggleVibration(): Promise<void> {
     this._vibrationEnabled = !this._vibrationEnabled;
     await saveSettings({ vibrationEnabled: this._vibrationEnabled });
+  }
+
+  private async _toggleDeveloperMode(): Promise<void> {
+    this._developerMode = !this._developerMode;
+    await saveSettings({ developerMode: this._developerMode });
   }
 
   private _startEditPb(): void {
@@ -392,6 +399,22 @@ export class AppSettings extends LitElement {
             ></button>
           </div>
         </div>
+
+        ${import.meta.env.DEV ? html`
+          <div class="section">
+            <div class="section-title">Debug</div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">Training debug</div>
+                <div class="setting-desc">Show debug controls during training</div>
+              </div>
+              <button
+                class="toggle ${this._developerMode ? 'on' : ''}"
+                @click=${this._toggleDeveloperMode}
+              ></button>
+            </div>
+          </div>
+        ` : ''}
 
         <div class="version">Nereus v0.1.0</div>
       </div>

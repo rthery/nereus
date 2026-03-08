@@ -34,6 +34,7 @@ export class AppTimer extends LitElement {
   @state() private _completed = false;
   @state() private _soundEnabled = true;
   @state() private _vibrationEnabled = true;
+  @state() private _developerMode = false;
   @state() private _contractionCount = 0;
   @state() private _started = false;
 
@@ -424,6 +425,7 @@ export class AppTimer extends LitElement {
     const settings = await getSettings();
     this._soundEnabled = settings.soundEnabled;
     this._vibrationEnabled = settings.vibrationEnabled;
+    this._developerMode = settings.developerMode ?? false;
   }
 
   private async _acquireWakeLock(): Promise<void> {
@@ -538,6 +540,11 @@ export class AppTimer extends LitElement {
     this._releaseWakeLock();
     this._stopRaf();
     void this._saveSession(true);
+  }
+
+  /** DEV only: skip the current phase (breathe→hold, or hold→next round / complete). */
+  private _debugFinishPhase(): void {
+    this._engine?.skipPhase();
   }
 
   private _markContraction(): void {
@@ -709,14 +716,23 @@ export class AppTimer extends LitElement {
             </button>
             <button class="btn btn-danger" @click=${this._abort}>${msg('Stop')}</button>
           </div>
-          ${import.meta.env.DEV ? html`
-            <button
-              class="btn btn-secondary"
-              style="opacity:0.5;font-size:var(--font-xs);padding:var(--spacing-xs) var(--spacing-sm)"
-              @click=${this._debugComplete}
-            >
-              [DEV] Complete now
-            </button>
+          ${import.meta.env.DEV && this._developerMode ? html`
+            <div style="display:flex;gap:var(--spacing-xs)">
+              <button
+                class="btn btn-secondary"
+                style="opacity:0.5;font-size:var(--font-xs);padding:var(--spacing-xs) var(--spacing-sm)"
+                @click=${this._debugFinishPhase}
+              >
+                [DEV] Complete timer
+              </button>
+              <button
+                class="btn btn-secondary"
+                style="opacity:0.5;font-size:var(--font-xs);padding:var(--spacing-xs) var(--spacing-sm)"
+                @click=${this._debugComplete}
+              >
+                [DEV] Complete training
+              </button>
+            </div>
           ` : ''}
         </div>
 

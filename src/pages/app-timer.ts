@@ -47,7 +47,7 @@ export class AppTimer extends LitElement {
   private _engine: TimerEngine | null = null;
   private _wakeLock: WakeLockSentinel | null = null;
   private _rafId: number | null = null;
-  private static readonly _circumference = 2 * Math.PI * 120;
+  private static readonly _circumference = 2 * Math.PI * 125;
 
   static styles = [
     sharedStyles,
@@ -67,11 +67,11 @@ export class AppTimer extends LitElement {
       }
 
       .timer-page.breathe {
-        background: var(--color-breathe-bg);
+        background: var(--color-rest-bg);
       }
 
       .timer-page.hold {
-        background: var(--color-hold-bg);
+        background: var(--color-breathe-bg);
       }
 
       .timer-page.completed {
@@ -98,8 +98,8 @@ export class AppTimer extends LitElement {
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: var(--spacing-lg);
-        gap: var(--spacing-lg);
+        padding: var(--spacing-md);
+        gap: var(--spacing-sm);
       }
 
       .phase-label {
@@ -121,8 +121,8 @@ export class AppTimer extends LitElement {
 
       .phase-label .sym svg { width: 100%; height: 100%; }
 
-      .phase-label.breathe { color: var(--color-breathe); }
-      .phase-label.hold { color: var(--color-hold); }
+      .phase-label.breathe { color: var(--color-rest); }
+      .phase-label.hold { color: var(--color-breathe); }
 
       .timer-display {
         position: relative;
@@ -139,7 +139,7 @@ export class AppTimer extends LitElement {
       .timer-ring-bg {
         fill: none;
         stroke: var(--color-border);
-        stroke-width: 6;
+        stroke-width: 2;
       }
 
       .timer-ring-progress {
@@ -149,8 +149,8 @@ export class AppTimer extends LitElement {
         /* No CSS transition — rAF drives stroke-dashoffset directly for smooth 60fps */
       }
 
-      .timer-ring-progress.breathe { stroke: var(--color-breathe); }
-      .timer-ring-progress.hold { stroke: var(--color-hold); }
+      .timer-ring-progress.breathe { stroke: var(--color-rest); }
+      .timer-ring-progress.hold { stroke: var(--color-breathe); }
 
       .timer-text {
         position: absolute;
@@ -165,26 +165,28 @@ export class AppTimer extends LitElement {
       }
 
       .round-dots {
-        display: flex;
+        display: grid;
+        grid-template-columns: repeat(8, 20px);
         gap: var(--spacing-sm);
+        justify-content: center;
       }
 
-      .dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: var(--color-border);
-        transition: background var(--transition-fast);
+      .phase-dot {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        opacity: 0.2;
+        transition: opacity var(--transition-fast);
       }
 
-      .dot.done {
-        background: var(--color-success);
-      }
+      .phase-dot svg { width: 14px; height: 14px; }
 
-      .dot.current {
-        background: var(--color-accent);
-        box-shadow: 0 0 8px var(--color-accent);
-      }
+      .phase-dot.breathe { color: var(--color-rest); }
+      .phase-dot.hold { color: var(--color-breathe); }
+      .phase-dot.done { opacity: 0.45; }
+      .phase-dot.active { opacity: 1; }
 
       .bottom-area {
         padding: var(--spacing-lg);
@@ -566,7 +568,7 @@ export class AppTimer extends LitElement {
   }
 
   private _goHome(): void {
-    navigate('/');
+    navigate(this.tableData ? `/${this.tableData.type}` : '/training');
   }
 
   private _formatRemaining(sec: number): string {
@@ -679,12 +681,12 @@ export class AppTimer extends LitElement {
 
           <div class="timer-display">
             <svg class="timer-ring" viewBox="0 0 260 260">
-              <circle class="timer-ring-bg" cx="130" cy="130" r="120" />
+              <circle class="timer-ring-bg" cx="130" cy="130" r="125" />
               <circle
                 class="timer-ring-progress ${this._phase}"
                 cx="130"
                 cy="130"
-                r="120"
+                r="125"
                 stroke-dasharray=${circumference}
                 stroke-dashoffset=${circumference}
               />
@@ -693,23 +695,23 @@ export class AppTimer extends LitElement {
           </div>
 
           <div class="round-dots">
-            ${Array.from({ length: this._totalRounds }, (_, i) => {
-              let cls = '';
-              if (i < this._round) cls = 'done';
-              else if (i === this._round) cls = 'current';
-              return html`<span class="dot ${cls}"></span>`;
+            ${Array.from({ length: this._totalRounds * 2 }, (_, j) => {
+              const isHold = j % 2 === 1;
+              const currentFlat = this._round * 2 + (this._phase === 'hold' ? 1 : 0);
+              const cls = j < currentFlat ? 'done' : j === currentFlat ? 'active' : '';
+              return html`<span class="phase-dot ${isHold ? 'hold' : 'breathe'} ${cls}">${isHold ? symbolHoldIn : symbolBreathe}</span>`;
             })}
           </div>
         </div>
 
         <div class="bottom-area">
-          ${this._phase === 'hold'
-            ? html`
-                <button class="contraction-btn" @click=${this._markContraction}>
-                  ${msg(str`Tap for contraction (${this._contractionCount})`)}
-                </button>
-              `
-            : ''}
+          <button
+            class="contraction-btn"
+            style=${this._phase !== 'hold' ? 'visibility:hidden;pointer-events:none' : ''}
+            @click=${this._markContraction}
+          >
+            ${msg(str`Tap for contraction (${this._contractionCount})`)}
+          </button>
           <div class="control-btns">
             <button class="btn btn-secondary" @click=${this._togglePause}>
               ${this._running ? msg('Pause') : msg('Resume')}

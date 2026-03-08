@@ -42,5 +42,5 @@ export const symbolInhale = html`<svg xmlns="http://www.w3.org/2000/svg" width="
 export const symbolExhale = html`<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><polygon points="6,11 11,1 1,1" fill="currentColor"/></svg>`;
 export const symbolHoldIn = html`<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><rect x="1" y="1" width="10" height="10" fill="currentColor"/></svg>`;
 export const symbolHoldOut = html`<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><rect x="1" y="1" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>`;
-// ▲▼ combined breathe (inhale+exhale) for CO2/O2 tables
-export const symbolBreathe = html`<span style="display:inline-flex;gap:2px;align-items:center">${symbolInhale}${symbolExhale}</span>`;
+// ▲▼ combined breathe (inhale+exhale) — single SVG, triangles close together
+export const symbolBreathe = html`<svg xmlns="http://www.w3.org/2000/svg" width="14" height="12" viewBox="0 0 14 12"><polygon points="0,11 6,11 3,1" fill="currentColor"/><polygon points="8,1 14,1 11,11" fill="currentColor"/></svg>`;

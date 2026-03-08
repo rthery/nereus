@@ -61,7 +61,7 @@ export class AppTableSetup extends LitElement {
       /* Semantic title colors: phase/exercise type, not navigation */
       .page-title.co2 { color: var(--color-hold); }
       .page-title.o2 { color: var(--color-breathe); }
-      .page-title.breathing { color: var(--color-accent); }
+      .page-title.breathing { color: var(--color-rest); }
 
       .tabs {
         display: flex;
@@ -147,16 +147,12 @@ export class AppTableSetup extends LitElement {
         margin-bottom: var(--spacing-xs);
       }
 
-      /* Align info icon with the uppercase label.
-         line-height: 1 collapses the label's line box to the cap-height;
-         line-height: 0 on the button collapses the button to its SVG height,
-         so both sit at exactly the same vertical midpoint in the flex row. */
       .section-label-row .section-label { line-height: 1; }
       .section-label-row .info-btn {
         padding: 0;
-        line-height: 0;
         display: inline-flex;
         align-items: center;
+        translate: 0 -5px;
       }
       .section-label-row .info-btn svg {
         width: 13px;
@@ -334,13 +330,13 @@ export class AppTableSetup extends LitElement {
       .round-pill svg { width: 10px; height: 10px; flex-shrink: 0; }
 
       .round-pill.breathe {
-        background: color-mix(in srgb, var(--color-breathe) 18%, transparent);
-        color: var(--color-breathe);
+        background: color-mix(in srgb, var(--color-rest) 18%, transparent);
+        color: var(--color-rest);
       }
 
       .round-pill.hold {
-        background: color-mix(in srgb, var(--color-hold) 18%, transparent);
-        color: var(--color-hold);
+        background: color-mix(in srgb, var(--color-breathe) 18%, transparent);
+        color: var(--color-breathe);
       }
 
       .total-row {

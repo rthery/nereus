@@ -156,7 +156,7 @@ export class AppHistory extends LitElement {
       .timeline-entry.session-co2::before { background: var(--color-hold); }
       .timeline-entry.session-o2::before { background: var(--color-breathe); }
       .timeline-entry.session-pb::before { background: var(--color-accent); }
-      .timeline-entry.breathing::before { background: var(--color-breathe); opacity: 0.7; }
+      .timeline-entry.breathing::before { background: var(--color-rest); opacity: 0.7; }
       .timeline-entry.competition::before {
         background: var(--color-accent);
         width: 12px;
@@ -567,7 +567,7 @@ export class AppHistory extends LitElement {
       <div class="session-card">
         <div class="card-top">
           <div>
-            <span class="session-type" style="color:var(--color-breathe)">
+            <span class="session-type" style="color:var(--color-rest)">
               ${msg('Breathing')}
             </span>
             <span class="session-status ${b.completed ? 'completed' : 'incomplete'}">

@@ -1,8 +1,8 @@
 import { openDB, type IDBPDatabase } from 'idb';
-import { DEFAULT_SETTINGS, type Settings, type Session, type PBRecord, type Competition, type BreathingSession, type FreePreset, type FreeSession } from '../types.js';
+import { DEFAULT_SETTINGS, type Settings, type Session, type PBRecord, type Competition, type BreathingPreset, type BreathingSession, type FreePreset, type FreeSession } from '../types.js';
 
 const DB_NAME = 'nereus';
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
 
@@ -51,6 +51,11 @@ function getDB(): Promise<IDBPDatabase> {
           const store = transaction.objectStore('sessions');
           if (!store.indexNames.contains('type-date')) {
             store.createIndex('type-date', ['type', 'date']);
+          }
+        }
+        if (oldVersion < 6) {
+          if (!db.objectStoreNames.contains('breathing-presets')) {
+            db.createObjectStore('breathing-presets', { keyPath: 'id' });
           }
         }
       },
@@ -191,6 +196,28 @@ export async function deleteBreathingSession(id: string): Promise<void> {
   await db.delete('breathing-sessions', id);
 }
 
+// Breathing presets
+export async function getBreathingPresets(): Promise<BreathingPreset[]> {
+  try {
+    const db = await getDB();
+    return await db.getAll('breathing-presets');
+  } catch { return []; }
+}
+
+export async function saveBreathingPreset(preset: BreathingPreset): Promise<void> {
+  try {
+    const db = await getDB();
+    await db.put('breathing-presets', preset);
+  } catch { /* store not available yet */ }
+}
+
+export async function deleteBreathingPreset(id: string): Promise<void> {
+  try {
+    const db = await getDB();
+    await db.delete('breathing-presets', id);
+  } catch { /* store not available yet */ }
+}
+
 // Free presets
 export async function getFreePresets(): Promise<FreePreset[]> {
   try {
@@ -235,13 +262,14 @@ export async function deleteFreeSession(id: string): Promise<void> {
 // Reset (for testing)
 export async function clearAllData(): Promise<void> {
   const db = await getDB();
-  const tx = db.transaction(['settings', 'sessions', 'pb-history', 'competitions', 'breathing-sessions', 'free-presets', 'free-sessions'], 'readwrite');
+  const tx = db.transaction(['settings', 'sessions', 'pb-history', 'competitions', 'breathing-sessions', 'breathing-presets', 'free-presets', 'free-sessions'], 'readwrite');
   await Promise.all([
     tx.objectStore('settings').clear(),
     tx.objectStore('sessions').clear(),
     tx.objectStore('pb-history').clear(),
     tx.objectStore('competitions').clear(),
     tx.objectStore('breathing-sessions').clear(),
+    tx.objectStore('breathing-presets').clear(),
     tx.objectStore('free-presets').clear(),
     tx.objectStore('free-sessions').clear(),
     tx.done,

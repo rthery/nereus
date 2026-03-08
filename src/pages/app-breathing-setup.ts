@@ -2,15 +2,40 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { localized, msg } from '@lit/localize';
 import { sharedStyles } from '../styles/theme.js';
-import { getSettings, saveSettings } from '../services/db.js';
+import {
+  deleteBreathingPreset,
+  getBreathingPresets,
+  getSettings,
+  saveBreathingPreset,
+  saveSettings,
+} from '../services/db.js';
 import { navigate } from '../navigation.js';
 import {
   BREATHING_PRESETS,
   cycleDuration,
   activePhases,
+  isBuiltInBreathingPresetId,
 } from '../services/breathing-presets.js';
-import { symbolInhale, symbolExhale, symbolHoldIn, symbolHoldOut } from '../components/icons.js';
-import type { BreathingPhase, BreathingPreset, BreathingPresetId } from '../types.js';
+import {
+  iconBookmark,
+  iconEdit,
+  iconX,
+  symbolInhale,
+  symbolExhale,
+  symbolHoldIn,
+  symbolHoldOut,
+} from '../components/icons.js';
+import type { BreathingPhase, BreathingPreset } from '../types.js';
+
+interface CustomDraftSnapshot {
+  selectedId: string;
+  phases: BreathingPhase[];
+  cycles: number;
+  minutes: number;
+  saveName: string;
+  saveDescription: string;
+  saveFormOpen: boolean;
+}
 
 @localized()
 @customElement('app-breathing-setup')
@@ -18,7 +43,8 @@ export class AppBreathingSetup extends LitElement {
   /** When true (embedded in training page tabs), hides the page title and removes top padding. */
   @property({ type: Boolean }) embedded = false;
 
-  @state() private _selectedId: BreathingPresetId = 'coherence';
+  @state() private _selectedId = 'coherence';
+  @state() private _savedPresets: BreathingPreset[] = [];
   @state() private _customPhases: BreathingPhase[] = [
     { label: 'inhale', duration: 4 },
     { label: 'hold-in', duration: 0 },
@@ -28,6 +54,12 @@ export class AppBreathingSetup extends LitElement {
   @state() private _durationMode: 'cycles' | 'minutes' = 'cycles';
   @state() private _cycles = 15;
   @state() private _minutes = 5;
+  @state() private _saveName = '';
+  @state() private _saveDescription = '';
+  @state() private _saveFormOpen = false;
+  @state() private _editingSavedPresetId: string | null = null;
+
+  private _editSnapshot: CustomDraftSnapshot | null = null;
 
   static styles = [
     sharedStyles,
@@ -62,12 +94,13 @@ export class AppBreathingSetup extends LitElement {
         transition: border-color var(--transition-fast), background var(--transition-fast);
         text-align: left;
         width: 100%;
-        font-family: inherit;
         color: var(--color-text-primary);
       }
 
-      .preset-card:hover {
+      .preset-card:hover,
+      .preset-card:focus-visible {
         border-color: var(--color-accent);
+        outline: none;
       }
 
       .preset-card.active {
@@ -79,17 +112,47 @@ export class AppBreathingSetup extends LitElement {
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: var(--spacing-sm);
         margin-bottom: var(--spacing-xs);
+      }
+
+      .preset-name-row {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        min-width: 0;
       }
 
       .preset-name {
         font-size: var(--font-md);
         font-weight: 700;
+        min-width: 0;
       }
 
       .preset-duration {
         font-size: var(--font-xs);
         color: var(--color-text-muted);
+        flex-shrink: 0;
+      }
+
+      .saved-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 7px;
+        border-radius: var(--radius-full);
+        background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+        color: var(--color-accent);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        flex-shrink: 0;
+      }
+
+      .saved-indicator svg {
+        width: 11px;
+        height: 11px;
       }
 
       .preset-tip {
@@ -144,6 +207,25 @@ export class AppBreathingSetup extends LitElement {
         opacity: 0.75;
       }
 
+      .preset-card-actions {
+        display: flex;
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-md);
+      }
+
+      .preset-card-actions .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        flex: 1;
+      }
+
+      .preset-card-actions .btn svg {
+        width: 14px;
+        height: 14px;
+      }
+
       .custom-phases {
         margin-top: var(--spacing-md);
         display: flex;
@@ -175,28 +257,6 @@ export class AppBreathingSetup extends LitElement {
       .custom-phase-label.exhale { color: var(--color-hold); }
       .custom-phase-label.hold-in { color: var(--color-breathe); opacity: 0.7; }
       .custom-phase-label.hold-out { color: var(--color-hold); opacity: 0.7; }
-
-      .custom-phase-input {
-        width: 64px;
-        padding: var(--spacing-xs) var(--spacing-sm);
-        background: var(--color-bg-primary);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-sm);
-        color: var(--color-text-primary);
-        font-size: var(--font-md);
-        font-weight: 600;
-        text-align: center;
-        font-family: inherit;
-      }
-
-      .custom-phase-input:focus {
-        outline: none;
-        border-color: var(--color-accent);
-      }
-
-      .custom-phase-input.disabled {
-        opacity: 0.4;
-      }
 
       .custom-phase-unit {
         font-size: var(--font-sm);
@@ -245,7 +305,6 @@ export class AppBreathingSetup extends LitElement {
         color: #fff;
       }
 
-      /* Stepper control: [−] value [+] */
       .stepper {
         display: flex;
         align-items: stretch;
@@ -280,7 +339,6 @@ export class AppBreathingSetup extends LitElement {
         cursor: default;
       }
 
-      /* Stepper center: editable number input + small unit label stacked */
       .stepper-center {
         flex: 1;
         display: flex;
@@ -291,7 +349,6 @@ export class AppBreathingSetup extends LitElement {
         gap: 1px;
       }
 
-      /* Input looks like plain text — tap to edit directly */
       .stepper-input {
         background: transparent;
         border: none;
@@ -317,7 +374,6 @@ export class AppBreathingSetup extends LitElement {
         font-weight: 400;
       }
 
-      /* Hint shown below the stepper (estimated session length) */
       .stepper-hint {
         font-size: var(--font-xs);
         color: var(--color-text-muted);
@@ -325,7 +381,6 @@ export class AppBreathingSetup extends LitElement {
         margin-top: var(--spacing-xs);
       }
 
-      /* Compact stepper used inside the custom phase editor */
       .custom-stepper {
         display: flex;
         align-items: stretch;
@@ -345,6 +400,68 @@ export class AppBreathingSetup extends LitElement {
         width: 40px;
         font-size: var(--font-sm);
         padding: var(--spacing-xs) 0;
+      }
+
+      .save-card {
+        margin-top: var(--spacing-md);
+        padding-top: var(--spacing-md);
+        border-top: 1px solid color-mix(in srgb, var(--color-border) 75%, transparent);
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+      }
+
+      .save-title {
+        font-size: var(--font-sm);
+        font-weight: 700;
+        color: var(--color-text-primary);
+      }
+
+      .save-hint {
+        font-size: var(--font-xs);
+        color: var(--color-text-muted);
+        line-height: 1.5;
+      }
+
+      .save-input,
+      .save-textarea {
+        width: 100%;
+        padding: var(--spacing-sm) var(--spacing-md);
+        background: var(--color-bg-primary);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        color: var(--color-text-primary);
+        font-size: var(--font-sm);
+        font-family: inherit;
+      }
+
+      .save-input {
+        font-weight: 600;
+      }
+
+      .save-textarea {
+        resize: vertical;
+        min-height: 72px;
+      }
+
+      .save-input:focus,
+      .save-textarea:focus {
+        outline: none;
+        border-color: var(--color-accent);
+      }
+
+      .save-actions {
+        display: flex;
+        gap: var(--spacing-sm);
+      }
+
+      .save-actions .btn {
+        flex: 1;
+      }
+
+      .save-trigger {
+        margin-top: var(--spacing-md);
+        width: 100%;
       }
 
       .action-bar {
@@ -373,10 +490,10 @@ export class AppBreathingSetup extends LitElement {
         }
       }
 
-      /* Embedded in training page tab — outer tabs header provides the top spacing */
       :host([embedded]) .page {
         padding-top: 0;
       }
+
       :host([embedded]) .page-title {
         display: none;
       }
@@ -388,30 +505,90 @@ export class AppBreathingSetup extends LitElement {
     void this._load();
   }
 
-  private async _load(): Promise<void> {
-    const s = await getSettings();
-    if (s.breathingCustomPhases) {
-      this._customPhases = s.breathingCustomPhases;
-    }
-    if (s.breathingDurationMode) this._durationMode = s.breathingDurationMode;
-    if (s.breathingCycles) this._cycles = s.breathingCycles;
-    if (s.breathingMinutes) this._minutes = s.breathingMinutes;
+  private _sortedSavedPresets(presets: BreathingPreset[]): BreathingPreset[] {
+    return [...presets].sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  private async _selectPreset(id: BreathingPresetId): Promise<void> {
-    this._selectedId = id;
-    const preset = BREATHING_PRESETS.find((p) => p.id === id)!;
-    if (id !== 'custom') {
+  private _allPresets(savedPresets = this._savedPresets): BreathingPreset[] {
+    const customPreset = BREATHING_PRESETS.find((preset) => preset.id === 'custom')!;
+    return [
+      ...BREATHING_PRESETS.filter((preset) => preset.id !== 'custom'),
+      ...this._sortedSavedPresets(savedPresets),
+      customPreset,
+    ];
+  }
+
+  private _getPresetById(id: string): BreathingPreset | undefined {
+    return this._allPresets().find((preset) => preset.id === id);
+  }
+
+  private _resolveSelectedId(savedPresets: BreathingPreset[], preferredId: string | null): string {
+    const all = this._allPresets(savedPresets);
+    if (preferredId && all.some((preset) => preset.id === preferredId)) return preferredId;
+    return 'coherence';
+  }
+
+  private _persistSelectedPreset(id: string): void {
+    void saveSettings({ breathingLastPresetId: id });
+  }
+
+  private async _load(preferredId: string | null = null): Promise<void> {
+    const [settings, savedPresets] = await Promise.all([getSettings(), getBreathingPresets()]);
+
+    if (settings.breathingCustomPhases) {
+      this._customPhases = settings.breathingCustomPhases;
+    }
+    if (settings.breathingDurationMode) this._durationMode = settings.breathingDurationMode;
+    if (settings.breathingCycles) this._cycles = settings.breathingCycles;
+    if (settings.breathingMinutes) this._minutes = settings.breathingMinutes;
+
+    this._savedPresets = this._sortedSavedPresets(savedPresets);
+    const nextSelectedId = this._resolveSelectedId(
+      this._savedPresets,
+      preferredId ?? settings.breathingLastPresetId ?? this._selectedId,
+    );
+    this._selectedId = nextSelectedId;
+
+    const preset = this._getPresetById(nextSelectedId);
+    if (preset && nextSelectedId !== 'custom') {
       this._cycles = preset.defaultCycles;
       this._minutes = preset.defaultMinutes;
+      this._saveFormOpen = false;
     }
+
+    this._persistSelectedPreset(nextSelectedId);
+  }
+
+  private async _selectPreset(id: string): Promise<void> {
+    if (this._editingSavedPresetId && id !== 'custom') {
+      await this._cancelEditingSavedPreset(id);
+      return;
+    }
+    if (this._selectedId === id) return;
+
+    this._selectedId = id;
+    this._persistSelectedPreset(id);
+
+    const preset = this._getPresetById(id);
+    if (preset && id !== 'custom') {
+      this._cycles = preset.defaultCycles;
+      this._minutes = preset.defaultMinutes;
+      this._saveFormOpen = false;
+    }
+  }
+
+  private _handlePresetKeydown(event: KeyboardEvent, id: string): void {
+    if (event.target !== event.currentTarget) return;
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    void this._selectPreset(id);
   }
 
   private async _setCustomPhase(index: number, value: string): Promise<void> {
     const n = parseInt(value, 10);
     const duration = isNaN(n) || n < 0 ? 0 : Math.min(n, 99);
-    this._customPhases = this._customPhases.map((p, i) =>
-      i === index ? { ...p, duration } : p,
+    this._customPhases = this._customPhases.map((phase, i) =>
+      i === index ? { ...phase, duration } : phase,
     );
     await saveSettings({ breathingCustomPhases: this._customPhases });
   }
@@ -449,6 +626,112 @@ export class AppBreathingSetup extends LitElement {
     await this._setCustomPhase(idx, String(Math.max(0, Math.min(99, current + delta))));
   }
 
+  private async _startEditingSavedPreset(preset: BreathingPreset): Promise<void> {
+    this._editSnapshot = {
+      selectedId: this._selectedId,
+      phases: this._customPhases.map((phase) => ({ ...phase })),
+      cycles: this._cycles,
+      minutes: this._minutes,
+      saveName: this._saveName,
+      saveDescription: this._saveDescription,
+      saveFormOpen: this._saveFormOpen,
+    };
+    this._editingSavedPresetId = preset.id;
+    this._saveName = preset.name;
+    this._saveDescription = preset.tip ?? '';
+    this._saveFormOpen = true;
+    this._customPhases = preset.phases.map((phase) => ({ ...phase }));
+    this._cycles = preset.defaultCycles;
+    this._minutes = preset.defaultMinutes;
+    this._selectedId = 'custom';
+    await saveSettings({
+      breathingCustomPhases: this._customPhases,
+      breathingCycles: this._cycles,
+      breathingMinutes: this._minutes,
+      breathingLastPresetId: 'custom',
+    });
+  }
+
+  private async _cancelEditingSavedPreset(nextSelectedId?: string): Promise<void> {
+    const snapshot = this._editSnapshot;
+    this._editingSavedPresetId = null;
+    this._editSnapshot = null;
+    if (!snapshot) return;
+
+    this._customPhases = snapshot.phases.map((phase) => ({ ...phase }));
+    this._saveName = snapshot.saveName;
+    this._saveDescription = snapshot.saveDescription;
+    this._saveFormOpen = snapshot.saveFormOpen;
+
+    const selectedId = nextSelectedId ?? snapshot.selectedId;
+    this._selectedId = selectedId;
+
+    await saveSettings({
+      breathingCustomPhases: this._customPhases,
+      breathingCycles: snapshot.cycles,
+      breathingMinutes: snapshot.minutes,
+      breathingLastPresetId: selectedId,
+    });
+
+    if (selectedId === 'custom') {
+      this._cycles = snapshot.cycles;
+      this._minutes = snapshot.minutes;
+      return;
+    }
+
+    const preset = this._getPresetById(selectedId);
+    if (preset) {
+      this._cycles = preset.defaultCycles;
+      this._minutes = preset.defaultMinutes;
+    }
+  }
+
+  private async _saveCurrentPreset(): Promise<void> {
+    const name = this._saveName.trim();
+    if (!name) return;
+
+    const preset: BreathingPreset = {
+      id: this._editingSavedPresetId ?? crypto.randomUUID(),
+      name,
+      tip: this._saveDescription.trim() || undefined,
+      phases: this._customPhases.map((phase) => ({ ...phase })),
+      defaultCycles: this._cycles,
+      defaultMinutes: this._minutes,
+    };
+
+    await saveBreathingPreset(preset);
+    this._editingSavedPresetId = null;
+    this._editSnapshot = null;
+    this._saveFormOpen = false;
+    this._saveName = '';
+    this._saveDescription = '';
+    await this._load(preset.id);
+  }
+
+  private async _deleteSavedPreset(id: string): Promise<void> {
+    await deleteBreathingPreset(id);
+    const preferredId = this._selectedId === id ? 'custom' : this._selectedId;
+    if (this._editingSavedPresetId === id) {
+      this._editingSavedPresetId = null;
+      this._editSnapshot = null;
+      this._saveFormOpen = false;
+      this._saveName = '';
+      this._saveDescription = '';
+    }
+    await this._load(preferredId);
+  }
+
+  private _openSaveForm(): void {
+    this._saveFormOpen = true;
+  }
+
+  private _closeSaveForm(): void {
+    this._saveFormOpen = false;
+    if (this._editingSavedPresetId !== null) return;
+    this._saveName = '';
+    this._saveDescription = '';
+  }
+
   private _buildEffectivePreset(): BreathingPreset {
     if (this._selectedId === 'custom') {
       return {
@@ -459,13 +742,13 @@ export class AppBreathingSetup extends LitElement {
         defaultMinutes: this._minutes,
       };
     }
-    return BREATHING_PRESETS.find((p) => p.id === this._selectedId)!;
+    return this._getPresetById(this._selectedId) ?? BREATHING_PRESETS[0];
   }
 
   private _start(): void {
     const preset = this._buildEffectivePreset();
     const phases = activePhases(preset);
-    if (phases.length === 0) return; // nothing to run
+    if (phases.length === 0) return;
 
     navigate('/breathing-timer', {
       preset,
@@ -475,8 +758,10 @@ export class AppBreathingSetup extends LitElement {
     });
   }
 
-  private _presetDisplayName(id: BreathingPresetId): string {
-    switch (id) {
+  private _presetDisplayName(preset: BreathingPreset): string {
+    if (!isBuiltInBreathingPresetId(preset.id)) return preset.name;
+
+    switch (preset.id) {
       case 'coherence':  return msg('Coherent Breathing');
       case 'box':        return msg('Box Breathing');
       case '4-7-8':      return msg('4-7-8 Breath');
@@ -512,11 +797,11 @@ export class AppBreathingSetup extends LitElement {
     const phases = preset.id === 'custom' ? this._customPhases : preset.phases;
     return html`
       <div class="phase-pills">
-        ${phases.filter((p) => p.duration > 0).map(
-          (p) => html`
-            <span class="phase-pill ${p.label}">
-              ${this._phaseSymbol(p.label)}
-              ${this._phaseLabelText(p.label)} <span class="phase-pill-duration">${p.duration}s</span>
+        ${phases.filter((phase) => phase.duration > 0).map(
+          (phase) => html`
+            <span class="phase-pill ${phase.label}">
+              ${this._phaseSymbol(phase.label)}
+              ${this._phaseLabelText(phase.label)} <span class="phase-pill-duration">${phase.duration}s</span>
             </span>`,
         )}
       </div>
@@ -528,8 +813,8 @@ export class AppBreathingSetup extends LitElement {
     return html`
       <div class="custom-phases">
         ${phaseOrder.map((label, i) => {
-          const phase = this._customPhases.find((p) => p.label === label) ?? { label, duration: 0 };
-          const idx = this._customPhases.findIndex((p) => p.label === label);
+          const phase = this._customPhases.find((entry) => entry.label === label) ?? { label, duration: 0 };
+          const idx = this._customPhases.findIndex((entry) => entry.label === label);
           return html`
             <div class="custom-phase-row">
               <span class="custom-phase-label ${label}">
@@ -549,7 +834,7 @@ export class AppBreathingSetup extends LitElement {
                   min="0"
                   max="99"
                   .value=${String(phase.duration)}
-                  @change=${(e: Event) => this._setCustomPhase(idx >= 0 ? idx : i, (e.target as HTMLInputElement).value)}
+                  @change=${(event: Event) => this._setCustomPhase(idx >= 0 ? idx : i, (event.target as HTMLInputElement).value)}
                 />
                 <button
                   class="stepper-btn"
@@ -565,8 +850,114 @@ export class AppBreathingSetup extends LitElement {
     `;
   }
 
+  private _renderSaveForm() {
+    const canSave = this._saveName.trim().length > 0 && activePhases(this._buildEffectivePreset()).length > 0;
+    const isEditing = this._editingSavedPresetId !== null;
+
+    if (!this._saveFormOpen && !isEditing) {
+      return html`
+        <button class="btn btn-secondary save-trigger" @click=${this._openSaveForm}>
+          ${msg('Save preset')}
+        </button>
+      `;
+    }
+
+    return html`
+      <div class="save-card">
+        <div class="save-title">
+          ${isEditing
+            ? msg('Edit saved exercise')
+            : msg('Save custom exercise')}
+        </div>
+        <div class="save-hint">
+          ${isEditing
+            ? msg('Update the name, description, or timing, then save your changes.')
+            : msg('Give this breathing pattern a name to add it to your exercise list.')}
+        </div>
+        <input
+          class="save-input"
+          type="text"
+          maxlength="40"
+          .value=${this._saveName}
+          placeholder=${msg('Exercise name')}
+          @input=${(event: Event) => { this._saveName = (event.target as HTMLInputElement).value; }}
+        />
+        <textarea
+          class="save-textarea"
+          maxlength="120"
+          .value=${this._saveDescription}
+          placeholder=${msg('Short description (optional)')}
+          @input=${(event: Event) => { this._saveDescription = (event.target as HTMLTextAreaElement).value; }}
+        ></textarea>
+        <div class="save-actions">
+          <button class="btn btn-primary" ?disabled=${!canSave} @click=${() => this._saveCurrentPreset()}>
+            ${isEditing ? msg('Update preset') : msg('Save preset')}
+          </button>
+          <button
+            class="btn btn-secondary"
+            @click=${() => isEditing ? this._cancelEditingSavedPreset() : this._closeSaveForm()}
+          >
+            ${msg('Cancel')}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderSavedIndicator() {
+    return html`
+      <span
+        class="saved-indicator"
+        title=${msg('Saved custom exercise')}
+        aria-label=${msg('Saved custom exercise')}
+      >
+        ${iconBookmark}
+        ${msg('Saved')}
+      </span>
+    `;
+  }
+
+  private _renderPresetCard(preset: BreathingPreset) {
+    const isSavedPreset = !isBuiltInBreathingPresetId(preset.id);
+    const isSelected = this._selectedId === preset.id;
+
+    return html`
+      <div
+        class="preset-card ${isSelected ? 'active' : ''}"
+        role="button"
+        tabindex="0"
+        @click=${() => this._selectPreset(preset.id)}
+        @keydown=${(event: KeyboardEvent) => this._handlePresetKeydown(event, preset.id)}
+      >
+        <div class="preset-header">
+          <div class="preset-name-row">
+            <span class="preset-name">${this._presetDisplayName(preset)}</span>
+            ${isSavedPreset ? this._renderSavedIndicator() : ''}
+          </div>
+          <span class="preset-duration">${this._presetCycleDuration(preset)}s / ${msg('cycle')}</span>
+        </div>
+        ${preset.tip ? html`<div class="preset-tip">${preset.tip}</div>` : ''}
+        ${this._renderPresetPills(preset)}
+        ${isSelected && preset.id === 'custom' ? html`
+          ${this._renderCustomEditor()}
+          ${this._renderSaveForm()}
+        ` : ''}
+        ${isSelected && isSavedPreset ? html`
+          <div class="preset-card-actions">
+            <button class="btn btn-secondary" @click=${(event: Event) => { event.stopPropagation(); void this._startEditingSavedPreset(preset); }}>
+              ${iconEdit} ${msg('Edit')}
+            </button>
+            <button class="btn btn-danger" @click=${(event: Event) => { event.stopPropagation(); void this._deleteSavedPreset(preset.id); }}>
+              ${iconX} ${msg('Delete')}
+            </button>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
   render() {
-    const selectedPreset = BREATHING_PRESETS.find((p) => p.id === this._selectedId)!;
+    const selectedPreset = this._buildEffectivePreset();
 
     return html`
       <div class="page">
@@ -574,22 +965,7 @@ export class AppBreathingSetup extends LitElement {
 
         <div class="section-label">${msg('Program')}</div>
         <div class="preset-list">
-          ${BREATHING_PRESETS.map((preset) => html`
-            <button
-              class="preset-card ${this._selectedId === preset.id ? 'active' : ''}"
-              @click=${() => this._selectPreset(preset.id)}
-            >
-              <div class="preset-header">
-                <span class="preset-name">${this._presetDisplayName(preset.id)}</span>
-                <span class="preset-duration">${this._presetCycleDuration(preset)}s / ${msg('cycle')}</span>
-              </div>
-              ${preset.tip ? html`<div class="preset-tip">${preset.tip}</div>` : ''}
-              ${this._renderPresetPills(preset)}
-              ${this._selectedId === preset.id && preset.id === 'custom'
-                ? this._renderCustomEditor()
-                : ''}
-            </button>
-          `)}
+          ${this._allPresets().map((preset) => this._renderPresetCard(preset))}
         </div>
 
         <div class="duration-section">
@@ -620,7 +996,7 @@ export class AppBreathingSetup extends LitElement {
                   min="1"
                   max="99"
                   .value=${String(this._cycles)}
-                  @change=${(e: Event) => this._setCycles((e.target as HTMLInputElement).value)}
+                  @change=${(event: Event) => this._setCycles((event.target as HTMLInputElement).value)}
                 />
                 <span class="stepper-unit">${msg('cycles')}</span>
               </div>
@@ -631,11 +1007,9 @@ export class AppBreathingSetup extends LitElement {
                 aria-label="More cycles"
               >+</button>
             </div>
-            ${selectedPreset.id !== 'custom' ? html`
-              <div class="stepper-hint">
-                ~${Math.round(cycleDuration(selectedPreset) * this._cycles / 60)} min
-              </div>
-            ` : ''}
+            <div class="stepper-hint">
+              ~${Math.round(cycleDuration(selectedPreset) * this._cycles / 60)} min
+            </div>
           ` : html`
             <div class="stepper">
               <button
@@ -652,7 +1026,7 @@ export class AppBreathingSetup extends LitElement {
                   min="1"
                   max="60"
                   .value=${String(this._minutes)}
-                  @change=${(e: Event) => this._setMinutes((e.target as HTMLInputElement).value)}
+                  @change=${(event: Event) => this._setMinutes((event.target as HTMLInputElement).value)}
                 />
                 <span class="stepper-unit">${msg('minutes')}</span>
               </div>

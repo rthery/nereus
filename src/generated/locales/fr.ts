@@ -247,5 +247,15 @@
 'sf94437cd8a894d66': `Respiration`,
 'sf993bb199fefbe04': `Tout`,
 'sfba8ab688b0f45f4': str`Vous avez déjà effectué une séance ${0} aujourd'hui. S'entraîner deux fois avec le même type en une journée est contre-productif.`,
+'sa320cd59f04807e7': `Save preset`,
+'s5d7bfc31a436faa0': `Edit saved exercise`,
+'s7ef6777a0ee4c237': `Save custom exercise`,
+'sa616f096af93e61f': `Update the name, description, or timing, then save your changes.`,
+'s4951dfc4dac71773': `Give this breathing pattern a name to add it to your exercise list.`,
+'s5e2b92db2f4d991a': `Exercise name`,
+'s087ecb07519f066e': `Short description (optional)`,
+'sc6ced0652598f963': `Update preset`,
+'sc7f593b57b75951b': `Saved custom exercise`,
+'s44fa1773e1e78784': `Saved`,
     };
   

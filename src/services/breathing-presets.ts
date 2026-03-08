@@ -1,4 +1,4 @@
-import type { BreathingPhase, BreathingPreset, BreathingPresetId, BreathingSessionConfig } from '../types.js';
+import type { BreathingPhase, BreathingPreset, BuiltInBreathingPresetId, BreathingSessionConfig } from '../types.js';
 
 export const BREATHING_PRESETS: BreathingPreset[] = [
   {
@@ -40,6 +40,7 @@ export const BREATHING_PRESETS: BreathingPreset[] = [
   {
     id: 'apnea-prep',
     name: 'Freediving Prep',
+    tip: 'Longer exhales to settle before apnea',
     phases: [
       { label: 'inhale', duration: 4 },
       { label: 'exhale', duration: 8 },
@@ -61,8 +62,12 @@ export const BREATHING_PRESETS: BreathingPreset[] = [
   },
 ];
 
-export function getPresetById(id: BreathingPresetId): BreathingPreset | undefined {
+export function getPresetById(id: string): BreathingPreset | undefined {
   return BREATHING_PRESETS.find((p) => p.id === id);
+}
+
+export function isBuiltInBreathingPresetId(id: string): id is BuiltInBreathingPresetId {
+  return BREATHING_PRESETS.some((preset) => preset.id === id);
 }
 
 /** Sum of all active (duration > 0) phase durations in one cycle. */

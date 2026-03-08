@@ -16,8 +16,8 @@ import {
 import { navigate } from '../navigation.js';
 import { iconCheckCircle, symbolInhale, symbolExhale, symbolHoldIn, symbolHoldOut } from '../components/icons.js';
 import { BreathingEngine } from '../services/breathing-engine.js';
-import { activePhases } from '../services/breathing-presets.js';
-import type { BreathingPhase, BreathingSessionConfig, BreathingPresetId } from '../types.js';
+import { activePhases, isBuiltInBreathingPresetId } from '../services/breathing-presets.js';
+import type { BreathingPhase, BreathingPreset, BreathingSessionConfig } from '../types.js';
 
 @localized()
 @customElement('app-breathing-timer')
@@ -467,7 +467,7 @@ export class AppBreathingTimer extends LitElement {
     await saveBreathingSession({
       id: crypto.randomUUID(),
       date: this._sessionStartTime,
-      presetId: this.sessionConfig.preset.id as BreathingPresetId,
+      presetId: this.sessionConfig.preset.id,
       presetName: this.sessionConfig.preset.name,
       completedCycles: Math.max(0, this._cycle - 1),
       totalDuration: elapsed,
@@ -497,8 +497,10 @@ export class AppBreathingTimer extends LitElement {
   private _goBack(): void { navigate('/training'); }
 
   // ---- Helpers ----
-  private _presetDisplayName(id: BreathingPresetId): string {
-    switch (id) {
+  private _presetDisplayName(preset: BreathingPreset): string {
+    if (!isBuiltInBreathingPresetId(preset.id)) return preset.name;
+
+    switch (preset.id) {
       case 'coherence':  return msg('Coherent Breathing');
       case 'box':        return msg('Box Breathing');
       case '4-7-8':      return msg('4-7-8 Breath');
@@ -551,7 +553,7 @@ export class AppBreathingTimer extends LitElement {
 
       return html`
         <div class="pre-start">
-          <h2>${this._presetDisplayName(preset.id as BreathingPresetId)}</h2>
+          <h2>${this._presetDisplayName(preset)}</h2>
           <p>${durationLabel}</p>
 
           <div class="phase-preview">
@@ -592,7 +594,7 @@ export class AppBreathingTimer extends LitElement {
             <div class="stat">
               <div class="stat-label">${msg('Program')}</div>
               <div class="stat-value" style="font-size:var(--font-sm)">
-                ${this._presetDisplayName(preset.id as BreathingPresetId)}
+                ${this._presetDisplayName(preset)}
               </div>
             </div>
           </div>

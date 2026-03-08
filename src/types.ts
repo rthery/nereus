@@ -51,6 +51,7 @@ export interface Settings {
   breathingDurationMode?: 'cycles' | 'minutes';
   breathingCycles?: number;
   breathingMinutes?: number;
+  breathingLastPresetId?: string;
   freeLastPresetId?: string;
   developerMode?: boolean;
 }
@@ -122,12 +123,14 @@ export interface BreathingPhase {
   duration: number; // seconds, 0 = disabled
 }
 
-export type BreathingPresetId =
+export type BuiltInBreathingPresetId =
   | 'coherence'
   | 'box'
   | '4-7-8'
   | 'apnea-prep'
   | 'custom';
+
+export type BreathingPresetId = BuiltInBreathingPresetId | string;
 
 export interface BreathingPreset {
   id: BreathingPresetId;
@@ -160,7 +163,7 @@ export interface BreathingTimerState {
 export interface BreathingSession {
   id: string;
   date: number;
-  presetId: BreathingPresetId;
+  presetId: string;
   presetName: string;
   completedCycles: number;
   totalDuration: number; // seconds elapsed

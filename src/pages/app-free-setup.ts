@@ -156,12 +156,20 @@ export class AppFreeSetup extends LitElement {
       .preset-card-actions {
         display: flex;
         gap: var(--spacing-sm);
-        margin-top: var(--spacing-sm);
+        margin-top: var(--spacing-md);
       }
 
       .preset-card-actions .btn {
-        padding: var(--spacing-xs) var(--spacing-md);
-        font-size: var(--font-sm);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        flex: 1;
+      }
+
+      .preset-card-actions .btn svg {
+        width: 14px;
+        height: 14px;
       }
 
       .phase-pills {
@@ -847,8 +855,8 @@ export class AppFreeSetup extends LitElement {
                 <button class="btn btn-secondary" @click=${(e: Event) => { e.stopPropagation(); this._openEdit(preset); }}>
                   ${iconEdit} ${msg('Edit', { id: 'free-edit' })}
                 </button>
-                <button class="btn btn-danger" style="flex:0" @click=${(e: Event) => { e.stopPropagation(); void this._deletePreset(preset.id); }}>
-                  ${iconX}
+                <button class="btn btn-danger" @click=${(e: Event) => { e.stopPropagation(); void this._deletePreset(preset.id); }}>
+                  ${iconX} ${msg('Delete')}
                 </button>
               </div>
             ` : ''}

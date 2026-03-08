@@ -106,7 +106,7 @@ export class AppShell extends LitElement {
     super.disconnectedCallback();
     window.removeEventListener('popstate', this._onPopState);
     window.removeEventListener('navigate', this._onNavigate as EventListener);
-    this._mediaQuery?.removeEventListener('change', this._onMediaChange);
+    this._detachMediaQuery();
   }
 
   private async _init(): Promise<void> {
@@ -120,7 +120,13 @@ export class AppShell extends LitElement {
     this._ready = true;
   }
 
+  private _detachMediaQuery(): void {
+    this._mediaQuery?.removeEventListener('change', this._onMediaChange);
+    this._mediaQuery = undefined;
+  }
+
   private _resolveTheme(): void {
+    this._detachMediaQuery();
     if (this._theme === 'system') {
       this._mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
       this._mediaQuery.addEventListener('change', this._onMediaChange);

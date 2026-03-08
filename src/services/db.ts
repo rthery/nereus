@@ -2,14 +2,14 @@ import { openDB, type IDBPDatabase } from 'idb';
 import { DEFAULT_SETTINGS, type Settings, type Session, type PBRecord, type Competition, type BreathingSession, type FreePreset, type FreeSession } from '../types.js';
 
 const DB_NAME = 'nereus';
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
 
 function getDB(): Promise<IDBPDatabase> {
   if (!dbPromise) {
     dbPromise = openDB(DB_NAME, DB_VERSION, {
-      upgrade(db, oldVersion) {
+      upgrade(db, oldVersion, _newVersion, transaction) {
         if (oldVersion < 1) {
           if (!db.objectStoreNames.contains('settings')) {
             db.createObjectStore('settings');
@@ -47,10 +47,34 @@ function getDB(): Promise<IDBPDatabase> {
             store.createIndex('date', 'date');
           }
         }
+        if (oldVersion < 5 && db.objectStoreNames.contains('sessions')) {
+          const store = transaction.objectStore('sessions');
+          if (!store.indexNames.contains('type-date')) {
+            store.createIndex('type-date', ['type', 'date']);
+          }
+        }
       },
     });
   }
   return dbPromise;
+}
+
+type DateIndexedStore = 'sessions' | 'competitions' | 'breathing-sessions' | 'free-sessions';
+
+async function getLatestByDate<T>(storeName: DateIndexedStore, limit: number): Promise<T[]> {
+  const db = await getDB();
+  const tx = db.transaction(storeName);
+  const index = tx.store.index('date');
+  const items: T[] = [];
+
+  let cursor = await index.openCursor(null, 'prev');
+  while (cursor && items.length < limit) {
+    items.push(cursor.value as T);
+    cursor = await cursor.continue();
+  }
+
+  await tx.done;
+  return items;
 }
 
 // Settings
@@ -73,9 +97,7 @@ export async function saveSession(session: Session): Promise<void> {
 }
 
 export async function getSessions(limit = 50): Promise<Session[]> {
-  const db = await getDB();
-  const all = await db.getAllFromIndex('sessions', 'date');
-  return all.reverse().slice(0, limit);
+  return getLatestByDate<Session>('sessions', limit);
 }
 
 export async function getSessionsByType(
@@ -83,8 +105,19 @@ export async function getSessionsByType(
   limit = 50,
 ): Promise<Session[]> {
   const db = await getDB();
-  const all = await db.getAllFromIndex('sessions', 'type', type);
-  return all.reverse().slice(0, limit);
+  const tx = db.transaction('sessions');
+  const index = tx.store.index('type-date');
+  const range = IDBKeyRange.bound([type, 0], [type, Number.MAX_SAFE_INTEGER]);
+  const items: Session[] = [];
+
+  let cursor = await index.openCursor(range, 'prev');
+  while (cursor && items.length < limit) {
+    items.push(cursor.value as Session);
+    cursor = await cursor.continue();
+  }
+
+  await tx.done;
+  return items;
 }
 
 export async function deleteSession(id: string): Promise<void> {
@@ -135,9 +168,7 @@ export async function saveCompetition(competition: Competition): Promise<void> {
 }
 
 export async function getCompetitions(limit = 100): Promise<Competition[]> {
-  const db = await getDB();
-  const all = await db.getAllFromIndex('competitions', 'date');
-  return all.reverse().slice(0, limit);
+  return getLatestByDate<Competition>('competitions', limit);
 }
 
 export async function deleteCompetition(id: string): Promise<void> {
@@ -152,9 +183,7 @@ export async function saveBreathingSession(session: BreathingSession): Promise<v
 }
 
 export async function getBreathingSessions(limit = 100): Promise<BreathingSession[]> {
-  const db = await getDB();
-  const all = await db.getAllFromIndex('breathing-sessions', 'date');
-  return all.reverse().slice(0, limit);
+  return getLatestByDate<BreathingSession>('breathing-sessions', limit);
 }
 
 export async function deleteBreathingSession(id: string): Promise<void> {
@@ -194,9 +223,7 @@ export async function saveFreeSession(session: FreeSession): Promise<void> {
 
 export async function getFreeSessions(limit = 100): Promise<FreeSession[]> {
   try {
-    const db = await getDB();
-    const all = await db.getAllFromIndex('free-sessions', 'date');
-    return all.reverse().slice(0, limit);
+    return await getLatestByDate<FreeSession>('free-sessions', limit);
   } catch { return []; }
 }
 

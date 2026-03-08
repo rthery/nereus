@@ -1,0 +1,41 @@
+default:
+  image: node:22
+
+stages:
+  - test
+  - secret-detection
+  - deploy
+
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
+
+variables:
+  SECRET_DETECTION_ENABLED: "true"
+
+cache:
+  key:
+    files:
+      - pnpm-lock.yaml
+  paths:
+    - .pnpm-store/
+
+sast:
+  stage: test
+
+secret_detection:
+  stage: secret-detection
+
+pages:
+  stage: deploy
+  before_script:
+    - corepack enable
+    - pnpm config set store-dir .pnpm-store
+    - pnpm install --frozen-lockfile
+  script:
+    - export VITE_BASE_URL="$(node -p "(() => { const path = new URL(process.env.CI_PAGES_URL).pathname; return path.endsWith('/') ? path : path + '/'; })()")"
+    - pnpm build
+  pages:
+    publish: dist
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

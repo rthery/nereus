@@ -6,6 +6,8 @@ import { sharedStyles } from '../styles/theme.js';
 import { iconSettings } from '../components/icons.js';
 import { clearAllData, getSettings, saveSettings, savePB } from '../services/db.js';
 import { formatTime } from '../services/tables.js';
+import { exportAppData, downloadAppData, importAppData } from '../services/data-export.js';
+import { iconDownload, iconUpload } from '../components/icons.js';
 import type { ThemePreference, LocalePreference } from '../types.js';
 
 @localized()
@@ -250,6 +252,21 @@ export class AppSettings extends LitElement {
         color: var(--color-danger);
       }
 
+      .action-btn button,
+      .action-btn label {
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--spacing-xs);
+      }
+
+      .action-btn svg {
+        width: 16px;
+        height: 16px;
+        margin-right: var(--spacing-xs);
+      }
+
       .danger-row {
         background: color-mix(in srgb, var(--color-danger) 6%, var(--color-bg-surface));
         border-color: color-mix(in srgb, var(--color-danger) 24%, var(--color-border));
@@ -304,6 +321,39 @@ export class AppSettings extends LitElement {
   private async _toggleDeveloperMode(): Promise<void> {
     this._developerMode = !this._developerMode;
     await saveSettings({ developerMode: this._developerMode });
+  }
+
+  private async _exportAppData(): Promise<void> {
+    try {
+      const exportData = await exportAppData();
+      downloadAppData(exportData);
+    } catch (error) {
+      console.error('Export failed:', error);
+      window.alert('Export failed. Please try again.');
+    }
+  }
+
+  private async _importAppData(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    
+    if (!file) return;
+
+    const confirmed = window.confirm(
+      'Importing data will overwrite all current app data. Are you sure you want to continue?',
+    );
+    
+    if (!confirmed) return;
+
+    try {
+      await importAppData(file);
+    } catch (error) {
+      console.error('Import failed:', error);
+      window.alert('Import failed. Please check the file and try again.');
+    } finally {
+      // Reset the file input
+      input.value = '';
+    }
   }
 
   private async _deleteAppDataAndReload(): Promise<void> {
@@ -444,6 +494,37 @@ export class AppSettings extends LitElement {
               class="toggle ${this._vibrationEnabled ? 'on' : ''}"
               @click=${this._toggleVibration}
             ></button>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">${msg('Data Backup')}</div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">${msg('Export Data')}</div>
+              <div class="setting-desc">${msg('Download all your app data as a backup file')}</div>
+            </div>
+            <button
+              class="action-btn"
+              @click=${this._exportAppData}
+            >
+              ${iconDownload} ${msg('Export')}
+            </button>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">${msg('Import Data')}</div>
+              <div class="setting-desc">${msg('Restore your app data from a backup file')}</div>
+            </div>
+            <label class="action-btn">
+              ${iconUpload} ${msg('Import')}
+              <input
+                type="file"
+                accept=".json"
+                style="display: none;"
+                @change=${this._importAppData}
+              />
+            </label>
           </div>
         </div>
 

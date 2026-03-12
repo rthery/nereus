@@ -75,9 +75,13 @@ export class AppBreathingSetup extends LitElement {
   static styles = [
     sharedStyles,
     css`
+      :host {
+        display: block;
+      }
+
       .page {
         padding: var(--spacing-lg);
-        max-width: 600px;
+        max-width: 800px;
         margin: 0 auto;
         padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0) + 80px);
       }
@@ -191,20 +195,6 @@ export class AppBreathingSetup extends LitElement {
         margin-top: 4px;
       }
 
-      .icon-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        flex-shrink: 0;
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-full);
-        background: transparent;
-        color: var(--color-text-secondary);
-        cursor: pointer;
-      }
-
       .preset-tip {
         font-size: var(--font-xs);
         color: var(--color-text-muted);
@@ -213,88 +203,7 @@ export class AppBreathingSetup extends LitElement {
       }
 
       .phase-pills {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
         margin-top: var(--spacing-xs);
-      }
-
-      .phase-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 3px;
-        font-size: 10px;
-        font-weight: 600;
-        padding: 2px 6px;
-        border-radius: var(--radius-full);
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-      }
-
-      .phase-pill svg { width: 9px; height: 9px; flex-shrink: 0; }
-
-      .phase-pill-duration { text-transform: none; }
-
-      .phase-pill.inhale {
-        background: color-mix(in srgb, var(--color-breathe) 20%, transparent);
-        color: var(--color-breathe);
-      }
-
-      .phase-pill.hold-in {
-        background: color-mix(in srgb, var(--color-breathe) 12%, transparent);
-        color: var(--color-breathe);
-        opacity: 0.75;
-      }
-
-      .phase-pill.exhale {
-        background: color-mix(in srgb, var(--color-hold) 20%, transparent);
-        color: var(--color-hold);
-      }
-
-      .phase-pill.hold-out {
-        background: color-mix(in srgb, var(--color-hold) 12%, transparent);
-        color: var(--color-hold);
-        opacity: 0.75;
-      }
-
-      .preset-card-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--spacing-sm);
-        margin-top: var(--spacing-md);
-        align-items: center;
-      }
-
-      .preset-card-actions .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        flex: 0 0 auto;
-        min-height: 38px;
-        padding: 9px 16px;
-        font-size: var(--font-sm);
-        white-space: nowrap;
-      }
-
-      .preset-card-actions .btn svg {
-        width: 14px;
-        height: 14px;
-      }
-
-      .preset-card-actions .btn-icon-only {
-        padding: 9px 11px;
-        min-width: 38px;
-      }
-
-      .preset-card-actions-main {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--spacing-sm);
-      }
-
-      .preset-card-actions-delete {
-        margin-left: auto;
       }
 
       .custom-phases {
@@ -334,14 +243,6 @@ export class AppBreathingSetup extends LitElement {
         color: var(--color-text-muted);
       }
 
-      .section-label {
-        font-size: var(--font-xs);
-        font-weight: 600;
-        color: var(--color-text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: var(--spacing-xs);
-      }
 
       .duration-section {
         margin-bottom: var(--spacing-lg);
@@ -535,34 +436,10 @@ export class AppBreathingSetup extends LitElement {
         width: 100%;
       }
 
-      .action-bar {
-        position: fixed;
-        bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0));
-        left: 0;
-        right: 0;
-        padding: var(--spacing-md) var(--spacing-lg);
-        background: var(--color-bg-secondary);
-        border-top: 1px solid var(--color-border);
-        display: flex;
-        gap: var(--spacing-sm);
-        justify-content: center;
-        z-index: 50;
-      }
-
-      .action-bar .btn {
-        flex: 1;
-        max-width: 300px;
-      }
-
-      @media (min-width: 769px) {
-        .action-bar {
-          bottom: 0;
-          left: 80px;
-        }
-      }
-
       :host([embedded]) .page {
-        padding-top: 0;
+        padding: 0;
+        max-width: none;
+        margin: 0;
       }
 
       :host([embedded]) .page-title {
@@ -1075,8 +952,8 @@ export class AppBreathingSetup extends LitElement {
           ${this._renderSaveForm()}
         ` : ''}
         ${showActions ? html`
-          <div class="preset-card-actions">
-            <div class="preset-card-actions-main">
+          <div class="card-actions">
+            <div class="card-actions-main">
               ${canShare ? html`
                 <button class="btn btn-secondary" @click=${(event: Event) => { event.stopPropagation(); void this._openShareDialog(); }}>
                   ${iconShare2} ${msg('Share')}
@@ -1090,7 +967,7 @@ export class AppBreathingSetup extends LitElement {
             </div>
             ${isSavedPreset ? html`
             <button
-              class="btn btn-danger btn-icon-only preset-card-actions-delete"
+              class="btn btn-danger btn-icon-only card-actions-delete"
               title=${msg('Delete')}
               aria-label=${msg('Delete')}
               @click=${(event: Event) => { event.stopPropagation(); void this._deleteSavedPreset(preset.id); }}
@@ -1133,7 +1010,6 @@ export class AppBreathingSetup extends LitElement {
         <h1 class="page-title">${msg('Breathing Exercises')}</h1>
         ${this._renderImportBanner()}
 
-        <div class="section-label">${msg('Program')}</div>
         <div class="preset-list">
           ${this._allPresets().map((preset) => this._renderPresetCard(preset))}
         </div>

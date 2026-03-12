@@ -32,7 +32,7 @@ export class AppNav extends LitElement {
       justify-content: space-around;
       align-items: center;
       height: var(--nav-height);
-      max-width: 600px;
+      max-width: 800px;
       margin: 0 auto;
       padding: 0 var(--spacing-sm);
     }

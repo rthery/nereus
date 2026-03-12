@@ -73,6 +73,10 @@ export class AppCompetitions extends LitElement {
   static styles = [
     sharedStyles,
     css`
+      :host {
+        display: block;
+      }
+
       .page {
         padding: var(--spacing-lg);
         max-width: 800px;
@@ -87,53 +91,8 @@ export class AppCompetitions extends LitElement {
       }
 
       .tabs {
-        display: flex;
-        gap: var(--spacing-xs);
         margin-bottom: var(--spacing-lg);
-        background: var(--color-bg-surface);
-        border-radius: var(--radius-full);
-        padding: 3px;
-        border: 1px solid var(--color-border);
       }
-
-      .tab-btn {
-        flex: 1;
-        padding: var(--spacing-sm) var(--spacing-md);
-        border: none;
-        border-radius: var(--radius-full);
-        background: transparent;
-        color: var(--color-text-secondary);
-        font-size: var(--font-sm);
-        font-weight: 600;
-        cursor: pointer;
-        transition: all var(--transition-fast);
-        font-family: inherit;
-      }
-
-      .tab-btn.active {
-        background: var(--color-accent);
-        color: #fff;
-      }
-
-      .add-btn {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-xs);
-        padding: var(--spacing-sm) var(--spacing-md);
-        background: var(--color-accent);
-        color: #fff;
-        border: none;
-        border-radius: var(--radius-full);
-        font-size: var(--font-sm);
-        font-weight: 600;
-        cursor: pointer;
-        font-family: inherit;
-        margin-bottom: var(--spacing-lg);
-        transition: opacity var(--transition-fast);
-      }
-
-      .add-btn svg { width: 18px; height: 18px; }
-      .add-btn:hover { opacity: 0.85; }
 
       /* Form */
       .form-panel {
@@ -239,65 +198,16 @@ export class AppCompetitions extends LitElement {
         align-items: flex-end;
       }
 
-      /* Time picker (same style as PB test) */
       .time-picker {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-xs);
-        background: var(--color-bg-surface);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-sm);
-        padding: var(--spacing-xs) var(--spacing-sm);
         flex: 1;
       }
 
-      .time-picker:focus-within {
-        border-color: var(--color-accent);
-      }
-
       .time-picker-field {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 2px;
         flex: 1;
       }
 
       .time-picker-field input {
-        background: transparent;
-        border: none;
-        color: var(--color-text-primary);
-        font-size: var(--font-md);
-        font-weight: 700;
-        text-align: center;
-        font-family: inherit;
-        font-variant-numeric: tabular-nums;
         width: 100%;
-        padding: 0;
-        -moz-appearance: textfield;
-      }
-
-      .time-picker-field input:focus { outline: none; }
-
-      .time-picker-field input::-webkit-outer-spin-button,
-      .time-picker-field input::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-
-      .time-picker-unit {
-        font-size: 9px;
-        color: var(--color-text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-      }
-
-      .time-picker-sep {
-        font-size: var(--font-md);
-        font-weight: 700;
-        color: var(--color-text-secondary);
-        padding-bottom: 1.2em;
-        flex-shrink: 0;
       }
 
       /* Meters input */
@@ -434,38 +344,8 @@ export class AppCompetitions extends LitElement {
       }
 
       .card-actions {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: var(--spacing-sm);
         padding: 0 var(--spacing-md) var(--spacing-md);
-      }
-
-      .card-actions-main {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--spacing-sm);
-      }
-
-      .card-actions .btn {
-        min-height: 38px;
-        padding: 9px 16px;
-        font-size: var(--font-sm);
-        white-space: nowrap;
-      }
-
-      .card-actions .btn svg {
-        width: 14px;
-        height: 14px;
-      }
-
-      .card-actions .btn-icon-only {
-        padding: 9px 11px;
-        min-width: 38px;
-      }
-
-      .card-actions-delete {
-        margin-left: auto;
+        margin-top: 0;
       }
 
       .result-chips {
@@ -493,12 +373,6 @@ export class AppCompetitions extends LitElement {
         width: 14px;
         height: 14px;
         display: block;
-      }
-
-      .empty-state {
-        text-align: center;
-        padding: var(--spacing-2xl);
-        color: var(--color-text-muted);
       }
 
       /* Progress chart */
@@ -874,7 +748,7 @@ export class AppCompetitions extends LitElement {
 
   private _renderList() {
     return html`
-      <button class="add-btn" @click=${this._openNewForm}>
+      <button class="btn btn-primary btn-compact" style="margin-bottom: var(--spacing-lg)" @click=${this._openNewForm}>
         ${iconPlus} ${msg('Add Competition')}
       </button>
 

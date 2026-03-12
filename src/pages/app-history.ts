@@ -57,6 +57,10 @@ export class AppHistory extends LitElement {
   static styles = [
     sharedStyles,
     css`
+      :host {
+        display: block;
+      }
+
       .page {
         padding: var(--spacing-lg);
         max-width: 800px;
@@ -107,34 +111,14 @@ export class AppHistory extends LitElement {
       }
 
       .tabs {
-        display: flex;
-        gap: var(--spacing-xs);
         margin-bottom: var(--spacing-lg);
-        background: var(--color-bg-surface);
-        border-radius: var(--radius-full);
-        padding: 3px;
-        border: 1px solid var(--color-border);
         overflow-x: auto;
       }
 
       .tab-btn {
-        flex: 1;
-        padding: var(--spacing-sm) var(--spacing-sm);
-        border: none;
-        border-radius: var(--radius-full);
-        background: transparent;
-        color: var(--color-text-secondary);
         font-size: var(--font-xs);
-        font-weight: 600;
-        cursor: pointer;
-        transition: all var(--transition-fast);
-        font-family: inherit;
+        padding: var(--spacing-sm) var(--spacing-sm);
         white-space: nowrap;
-      }
-
-      .tab-btn.active {
-        background: var(--color-accent);
-        color: #fff;
       }
 
       .subfilters {
@@ -372,46 +356,6 @@ export class AppHistory extends LitElement {
         color: var(--color-text-secondary);
       }
 
-      .entry-actions {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: var(--spacing-sm);
-        margin-top: var(--spacing-md);
-      }
-
-      .entry-actions-main {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--spacing-sm);
-      }
-
-      .entry-actions .btn {
-        min-height: 38px;
-        padding: 9px 16px;
-        font-size: var(--font-sm);
-        white-space: nowrap;
-      }
-
-      .entry-actions .btn svg {
-        width: 14px;
-        height: 14px;
-      }
-
-      .entry-actions .btn-icon-only {
-        padding: 9px 11px;
-        min-width: 38px;
-      }
-
-      .entry-actions-delete {
-        margin-left: auto;
-      }
-
-      .empty-state {
-        text-align: center;
-        padding: var(--spacing-2xl);
-        color: var(--color-text-muted);
-      }
     `,
   ];
 
@@ -575,8 +519,8 @@ export class AppHistory extends LitElement {
 
   private _renderEntryActions(deleteAction: () => Promise<void>, editAction?: () => void) {
     return html`
-      <div class="entry-actions">
-        <div class="entry-actions-main">
+      <div class="card-actions">
+        <div class="card-actions-main">
           ${editAction ? html`
             <button class="btn btn-secondary" @click=${(event: Event) => { event.stopPropagation(); editAction(); }}>
               ${iconEdit} ${msg('Edit')}
@@ -584,7 +528,7 @@ export class AppHistory extends LitElement {
           ` : ''}
         </div>
         <button
-          class="btn btn-danger btn-icon-only entry-actions-delete"
+          class="btn btn-danger btn-icon-only card-actions-delete"
           title=${msg('Delete')}
           aria-label=${msg('Delete')}
           @click=${async (event: Event) => {

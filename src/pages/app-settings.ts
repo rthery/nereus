@@ -25,9 +25,13 @@ export class AppSettings extends LitElement {
   static styles = [
     sharedStyles,
     css`
+      :host {
+        display: block;
+      }
+
       .page {
         padding: var(--spacing-lg);
-        max-width: 600px;
+        max-width: 800px;
         margin: 0 auto;
         padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0) + var(--spacing-xl));
       }
@@ -42,14 +46,6 @@ export class AppSettings extends LitElement {
         margin-bottom: var(--spacing-xl);
       }
 
-      .section-title {
-        font-size: var(--font-sm);
-        font-weight: 600;
-        color: var(--color-text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        margin-bottom: var(--spacing-md);
-      }
 
       .setting-row {
         display: flex;
@@ -146,82 +142,6 @@ export class AppSettings extends LitElement {
         color: var(--color-accent);
       }
 
-      .pb-edit-btn {
-        background: none;
-        border: none;
-        color: var(--color-text-muted);
-        cursor: pointer;
-        font-size: var(--font-sm);
-        font-family: inherit;
-      }
-
-      .time-picker {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-xs);
-        background: var(--color-bg-primary);
-        border: 1px solid var(--color-accent);
-        border-radius: var(--radius-sm);
-        padding: var(--spacing-xs) var(--spacing-sm);
-      }
-
-      .time-picker-field {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 2px;
-      }
-
-      .time-picker-field input {
-        background: transparent;
-        border: none;
-        color: var(--color-text-primary);
-        font-size: var(--font-md);
-        font-weight: 600;
-        text-align: center;
-        font-family: inherit;
-        font-variant-numeric: tabular-nums;
-        width: 3ch;
-        padding: 0;
-        -moz-appearance: textfield;
-      }
-
-      .time-picker-field input:focus {
-        outline: none;
-      }
-
-      .time-picker-field input::-webkit-outer-spin-button,
-      .time-picker-field input::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-
-      .time-picker-unit {
-        font-size: 10px;
-        color: var(--color-text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-      }
-
-      .time-picker-sep {
-        font-size: var(--font-md);
-        font-weight: 700;
-        color: var(--color-text-secondary);
-        padding-bottom: 1.25em;
-        flex-shrink: 0;
-      }
-
-      .save-btn {
-        padding: var(--spacing-xs) var(--spacing-md);
-        background: var(--color-accent);
-        color: #fff;
-        border: none;
-        border-radius: var(--radius-full);
-        font-size: var(--font-sm);
-        font-weight: 600;
-        cursor: pointer;
-        font-family: inherit;
-      }
 
       .version {
         text-align: center;
@@ -230,42 +150,6 @@ export class AppSettings extends LitElement {
         margin-top: var(--spacing-xl);
       }
 
-      .action-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 6px 12px;
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-full);
-        background: var(--color-bg-primary);
-        color: var(--color-text-primary);
-        font-size: var(--font-xs);
-        font-weight: 600;
-        cursor: pointer;
-        font-family: inherit;
-        white-space: nowrap;
-      }
-
-      .action-btn.danger {
-        background: color-mix(in srgb, var(--color-danger) 10%, var(--color-bg-primary));
-        border-color: color-mix(in srgb, var(--color-danger) 45%, var(--color-border));
-        color: var(--color-danger);
-      }
-
-      .action-btn button,
-      .action-btn label {
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--spacing-xs);
-      }
-
-      .action-btn svg {
-        width: 16px;
-        height: 16px;
-        margin-right: var(--spacing-xs);
-      }
 
       .danger-row {
         background: color-mix(in srgb, var(--color-danger) 6%, var(--color-bg-surface));
@@ -390,7 +274,7 @@ export class AppSettings extends LitElement {
         </div>
 
         <div class="section">
-          <div class="section-title">${msg('Personal Best')}</div>
+          <div class="section-label">${msg('Personal Best')}</div>
           <div class="setting-row">
             <div>
               <div class="setting-label">${msg('Current PB')}</div>
@@ -430,20 +314,20 @@ export class AppSettings extends LitElement {
                         <span class="time-picker-unit">${msg('sec')}</span>
                       </div>
                     </div>
-                    <button class="save-btn" @click=${this._savePb}>${msg('Save')}</button>
+                    <button class="btn btn-primary btn-compact" @click=${this._savePb}>${msg('Save')}</button>
                   </div>
                 `
               : html`
                   <div class="pb-display">
                     <span class="pb-value">${this._pb > 0 ? formatTime(this._pb) : msg('Not set')}</span>
-                    <button class="pb-edit-btn" @click=${this._startEditPb}>${msg('Edit')}</button>
+                    <button class="btn btn-ghost" @click=${this._startEditPb}>${msg('Edit')}</button>
                   </div>
                 `}
           </div>
         </div>
 
         <div class="section">
-          <div class="section-title">${msg('Appearance')}</div>
+          <div class="section-label">${msg('Appearance')}</div>
           <div class="setting-row">
             <div class="setting-label">${msg('Theme')}</div>
             <div class="theme-options">
@@ -462,7 +346,7 @@ export class AppSettings extends LitElement {
         </div>
 
         <div class="section">
-          <div class="section-title">${msg('Language')}</div>
+          <div class="section-label">${msg('Language')}</div>
           <div class="setting-row">
             <div class="setting-label">${msg('Language')}</div>
             <div class="theme-options">
@@ -474,7 +358,7 @@ export class AppSettings extends LitElement {
         </div>
 
         <div class="section">
-          <div class="section-title">${msg('Feedback')}</div>
+          <div class="section-label">${msg('Feedback')}</div>
           <div class="setting-row">
             <div>
               <div class="setting-label">${msg('Sound')}</div>
@@ -498,14 +382,14 @@ export class AppSettings extends LitElement {
         </div>
 
         <div class="section">
-          <div class="section-title">${msg('Data Backup')}</div>
+          <div class="section-label">${msg('Data Backup')}</div>
           <div class="setting-row">
             <div>
               <div class="setting-label">${msg('Export Data')}</div>
               <div class="setting-desc">${msg('Download all your app data as a backup file')}</div>
             </div>
             <button
-              class="action-btn"
+              class="btn btn-secondary btn-compact"
               @click=${this._exportAppData}
             >
               ${iconDownload} ${msg('Export')}
@@ -516,7 +400,7 @@ export class AppSettings extends LitElement {
               <div class="setting-label">${msg('Import Data')}</div>
               <div class="setting-desc">${msg('Restore your app data from a backup file')}</div>
             </div>
-            <label class="action-btn">
+            <label class="btn btn-secondary btn-compact">
               ${iconUpload} ${msg('Import')}
               <input
                 type="file"
@@ -530,7 +414,7 @@ export class AppSettings extends LitElement {
 
         ${import.meta.env.DEV ? html`
           <div class="section">
-            <div class="section-title">Developer</div>
+            <div class="section-label">Developer</div>
             <div class="setting-row">
               <div>
                 <div class="setting-label">Training debug</div>
@@ -547,7 +431,7 @@ export class AppSettings extends LitElement {
                 <div class="setting-desc">Delete current app data and reload the app</div>
               </div>
               <button
-                class="action-btn danger"
+                class="btn btn-danger btn-compact"
                 @click=${this._deleteAppDataAndReload}
               >
                 Reset

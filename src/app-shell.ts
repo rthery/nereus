@@ -42,6 +42,12 @@ export class AppShell extends LitElement {
         min-height: 100dvh;
       }
 
+      @media (min-width: 769px) {
+        .app-content.with-nav {
+          padding-left: 80px;
+        }
+      }
+
       .safety-overlay {
         position: fixed;
         inset: 0;
@@ -272,7 +278,7 @@ export class AppShell extends LitElement {
             </div>
           `
         : ''}
-      <div class="app-content">
+      <div class="app-content ${hideNav ? '' : 'with-nav'}">
         ${this._renderPage()}
       </div>
       ${!hideNav ? html`<app-nav .currentRoute=${this._route}></app-nav>` : ''}

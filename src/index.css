@@ -14,6 +14,7 @@ html {
   -moz-text-size-adjust: 100%;
   text-size-adjust: 100%;
   background-color: #0a1628;
+  scrollbar-gutter: stable;
 }
 
 @media (prefers-color-scheme: light) {

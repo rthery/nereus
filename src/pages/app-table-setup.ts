@@ -41,9 +41,13 @@ export class AppTableSetup extends LitElement {
   static styles = [
     sharedStyles,
     css`
+      :host {
+        display: block;
+      }
+
       .page {
         padding: var(--spacing-lg);
-        max-width: 600px;
+        max-width: 800px;
         margin: 0 auto;
         padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0) + 80px);
       }
@@ -67,71 +71,10 @@ export class AppTableSetup extends LitElement {
       .page-title.breathing { color: var(--color-rest); }
       .page-title.free { color: var(--color-activity); }
 
-      .tabs {
-        display: flex;
-        gap: var(--spacing-xs);
-        background: var(--color-bg-surface);
-        border-radius: var(--radius-full);
-        padding: 3px;
-        border: 1px solid var(--color-border);
-        margin-bottom: var(--spacing-lg);
-      }
-
       .tab-btn {
-        flex: 1;
-        padding: var(--spacing-sm) var(--spacing-md);
-        border: none;
-        border-radius: var(--radius-full);
-        background: transparent;
-        color: var(--color-text-secondary);
-        font-size: var(--font-sm);
-        font-weight: 700;
-        cursor: pointer;
-        transition: all var(--transition-fast);
-        font-family: inherit;
         letter-spacing: 0.03em;
       }
 
-      /* All active tabs use the primary accent — tab = navigation, not content type */
-      .tab-btn.active {
-        background: var(--color-accent);
-        color: #fff;
-      }
-
-      /* Container for the tabs row when the breathing tab is active */
-      .tabs-header {
-        padding: var(--spacing-lg) var(--spacing-lg) 0;
-        max-width: 600px;
-        margin: 0 auto;
-      }
-
-      .info-btn {
-        background: none;
-        border: none;
-        color: var(--color-text-muted);
-        cursor: pointer;
-        padding: 4px;
-        display: flex;
-        align-items: center;
-        border-radius: var(--radius-sm);
-        -webkit-tap-highlight-color: transparent;
-        transition: color var(--transition-fast);
-      }
-
-      .info-btn:hover, .info-btn.active {
-        color: var(--color-accent);
-      }
-
-      .info-tooltip {
-        background: var(--color-bg-surface);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-md);
-        padding: var(--spacing-md);
-        margin-bottom: var(--spacing-lg);
-        font-size: var(--font-sm);
-        color: var(--color-text-secondary);
-        line-height: 1.5;
-      }
 
       .no-pb {
         text-align: center;
@@ -161,14 +104,6 @@ export class AppTableSetup extends LitElement {
       .section-label-row .info-btn svg {
         width: 13px;
         height: 13px;
-      }
-
-      .section-label {
-        font-size: var(--font-xs);
-        font-weight: 600;
-        color: var(--color-text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
       }
 
       /* Difficulty info tooltip — structured as labelled rows from preset constants */
@@ -365,31 +300,6 @@ export class AppTableSetup extends LitElement {
         font-variant-numeric: tabular-nums;
       }
 
-      .action-bar {
-        position: fixed;
-        bottom: calc(var(--nav-height) + env(safe-area-inset-bottom, 0));
-        left: 0;
-        right: 0;
-        padding: var(--spacing-md) var(--spacing-lg);
-        background: var(--color-bg-secondary);
-        border-top: 1px solid var(--color-border);
-        display: flex;
-        gap: var(--spacing-sm);
-        justify-content: center;
-        z-index: 50;
-      }
-
-      .action-bar .btn {
-        flex: 1;
-        max-width: 300px;
-      }
-
-      @media (min-width: 769px) {
-        .action-bar {
-          bottom: 0;
-          left: 80px;
-        }
-      }
     `,
   ];
 
@@ -555,7 +465,7 @@ export class AppTableSetup extends LitElement {
     // Breathing tab — inline setup, no /breathing navigation
     if (this._activeTab === 'breathing' && !this.mode) {
       return html`
-        <div class="tabs-header">
+        <div class="page">
           ${this._renderPageHeader()}
           ${this._renderModeTabs()}
           <div class="page-header">
@@ -571,15 +481,15 @@ export class AppTableSetup extends LitElement {
               ${msg('Guided breathing exercises for relaxation and freediving preparation. Choose a preset pattern and let the animated timer pace your breath.')}
             </div>
           ` : ''}
+          <app-breathing-setup embedded></app-breathing-setup>
         </div>
-        <app-breathing-setup embedded></app-breathing-setup>
       `;
     }
 
     // Free tab — inline free setup
     if (this._activeTab === 'free' && !this.mode) {
       return html`
-        <div class="tabs-header">
+        <div class="page">
           ${this._renderPageHeader()}
           ${this._renderModeTabs()}
           <div class="page-header">
@@ -595,8 +505,8 @@ export class AppTableSetup extends LitElement {
               ${msg('Build your own training flow with breathing, apnea, activity, and count phases. Save presets to repeat the same routine anytime.', { id: 'free-tab-tooltip' })}
             </div>
           ` : ''}
+          <app-free-setup embedded></app-free-setup>
         </div>
-        <app-free-setup embedded></app-free-setup>
       `;
     }
 

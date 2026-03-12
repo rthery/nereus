@@ -140,87 +140,11 @@ export class AppPbTest extends LitElement {
         color: var(--color-text-secondary);
       }
 
-      .time-picker {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--spacing-sm);
-        background: var(--color-bg-surface);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-md);
-        padding: var(--spacing-sm) var(--spacing-md);
-        width: 100%;
-        box-sizing: border-box;
-      }
-
-      .time-picker:focus-within {
-        border-color: var(--color-accent);
-      }
-
-      .time-picker-field {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        flex: 1;
-      }
-
-      .time-picker-field input {
-        background: transparent;
-        border: none;
-        color: var(--color-text-primary);
-        font-size: var(--font-lg);
-        font-weight: 700;
-        text-align: center;
-        font-family: inherit;
-        font-variant-numeric: tabular-nums;
-        width: 100%;
-        padding: 0;
-        -moz-appearance: textfield;
-      }
-
-      .time-picker-field input:focus {
-        outline: none;
-      }
-
-      .time-picker-field input::-webkit-outer-spin-button,
-      .time-picker-field input::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-
-      .time-picker-unit {
-        font-size: var(--font-xs);
-        color: var(--color-text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-      }
-
-      .time-picker-sep {
-        font-size: var(--font-lg);
-        font-weight: 700;
-        color: var(--color-text-secondary);
-        padding-bottom: 1.4em;
-        flex-shrink: 0;
-      }
-
-      .pb-edit-btn {
-        background: none;
-        border: none;
-        color: var(--color-text-muted);
-        cursor: pointer;
-        font-size: var(--font-sm);
-        font-family: inherit;
-        text-decoration: underline;
-        padding: var(--spacing-xs) 0;
-        margin-top: var(--spacing-xs);
-        display: block;
-      }
 
       .result-card {
         background: var(--color-bg-surface);
         border: 1px solid var(--color-border);
-        border-radius: var(--radius-lg);
+        border-radius: var(--radius-md);
         padding: var(--spacing-xl);
         width: 100%;
         max-width: 350px;
@@ -628,13 +552,13 @@ export class AppPbTest extends LitElement {
                       </div>
                     </div>
                   </div>
-                  <button class="pb-edit-btn" @click=${() => { this._editingResult = false; }}>
+                  <button class="btn btn-ghost" @click=${() => { this._editingResult = false; }}>
                     ${msg('Confirm')}
                   </button>
                 `
               : html`
                   <div class="result-pb">${this._formatTime(this._newPb)}</div>
-                  <button class="pb-edit-btn" @click=${() => { this._editingResult = true; }}>
+                  <button class="btn btn-ghost" @click=${() => { this._editingResult = true; }}>
                     ${msg('Adjust time')}
                   </button>
                 `}

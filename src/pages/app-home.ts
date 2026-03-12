@@ -20,6 +20,10 @@ export class AppHome extends LitElement {
   static styles = [
     sharedStyles,
     css`
+      :host {
+        display: block;
+      }
+
       .page {
         padding: var(--spacing-lg);
         max-width: 800px;
@@ -67,7 +71,7 @@ export class AppHome extends LitElement {
 
       .pb-card {
         background: var(--color-bg-surface);
-        border-radius: var(--radius-lg);
+        border-radius: var(--radius-md);
         padding: var(--spacing-md) var(--spacing-lg);
         margin-bottom: var(--spacing-md);
         border: 1px solid var(--color-border);
@@ -105,17 +109,6 @@ export class AppHome extends LitElement {
         color: var(--color-text-muted);
       }
 
-      .pb-action {
-        font-size: var(--font-sm);
-        color: var(--color-accent);
-        cursor: pointer;
-        background: none;
-        border: none;
-        font-weight: 600;
-        font-family: inherit;
-        white-space: nowrap;
-        flex-shrink: 0;
-      }
 
       .cta-card {
         display: flex;
@@ -179,14 +172,6 @@ export class AppHome extends LitElement {
         color: var(--color-success);
       }
 
-      .section-header {
-        font-size: var(--font-sm);
-        font-weight: 600;
-        color: var(--color-text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        margin-bottom: var(--spacing-sm);
-      }
 
       .session-item {
         display: flex;
@@ -194,7 +179,7 @@ export class AppHome extends LitElement {
         align-items: center;
         padding: var(--spacing-sm) var(--spacing-md);
         background: var(--color-bg-surface);
-        border-radius: var(--radius-sm);
+        border-radius: var(--radius-md);
         margin-bottom: var(--spacing-xs);
         border: 1px solid var(--color-border);
       }
@@ -235,12 +220,6 @@ export class AppHome extends LitElement {
         flex-shrink: 0;
       }
 
-      .empty-state {
-        text-align: center;
-        padding: var(--spacing-xl);
-        color: var(--color-text-muted);
-        font-size: var(--font-sm);
-      }
     `,
   ];
 
@@ -360,7 +339,7 @@ export class AppHome extends LitElement {
               ? html`<div class="pb-value">${formatTime(this._pb)}</div>`
               : html`<div class="pb-value empty">${msg('Not set yet')}</div>`}
           </div>
-          <button class="pb-action" @click=${() => navigate('/pb-test')}>
+          <button class="btn btn-ghost" @click=${() => navigate('/pb-test')}>
             ${this._pb > 0 ? msg('Retest') : msg('Take test')}
           </button>
         </div>
@@ -369,7 +348,7 @@ export class AppHome extends LitElement {
 
         ${this._recentSessions.length > 0
           ? html`
-              <div class="section-header">${msg('Recent')}</div>
+              <div class="section-label">${msg('Recent')}</div>
               ${this._recentSessions.slice(0, 3).map((s) => {
                 const completedRounds = s.rounds.filter((r) => r.completed).length;
                 const totalRounds = s.rounds.length;

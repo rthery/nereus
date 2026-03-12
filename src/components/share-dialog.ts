@@ -61,20 +61,6 @@ export class ShareDialog extends LitElement {
         line-height: 1.45;
       }
 
-      .icon-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        flex-shrink: 0;
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-full);
-        background: transparent;
-        color: var(--color-text-secondary);
-        cursor: pointer;
-      }
-
       .qr-card {
         display: flex;
         align-items: center;
@@ -196,85 +182,7 @@ export class ShareDialog extends LitElement {
       }
 
       .preset-card-container .phase-pills {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
         margin-top: var(--spacing-xs);
-      }
-
-      .preset-card-container .phase-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 3px;
-        font-size: 10px;
-        font-weight: 600;
-        padding: 2px 6px;
-        border-radius: var(--radius-full);
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-      }
-
-      .preset-card-container .phase-pill svg {
-        width: 9px;
-        height: 9px;
-        flex-shrink: 0;
-      }
-
-      .preset-card-container .phase-pill-duration {
-        text-transform: none;
-      }
-
-      .preset-card-container .phase-pill.inhale {
-        background: color-mix(in srgb, var(--color-breathe) 20%, transparent);
-        color: var(--color-breathe);
-      }
-
-      .preset-card-container .phase-pill.hold-in {
-        background: color-mix(in srgb, var(--color-breathe) 12%, transparent);
-        color: var(--color-breathe);
-        opacity: 0.75;
-      }
-
-      .preset-card-container .phase-pill.exhale {
-        background: color-mix(in srgb, var(--color-hold) 20%, transparent);
-        color: var(--color-hold);
-      }
-
-      .preset-card-container .phase-pill.hold-out {
-        background: color-mix(in srgb, var(--color-hold) 12%, transparent);
-        color: var(--color-hold);
-        opacity: 0.75;
-      }
-
-      .preset-card-container .phase-pill.breathing {
-        background: color-mix(in srgb, var(--color-breathe) 20%, transparent);
-        color: var(--color-breathe);
-      }
-
-      .preset-card-container .phase-pill.inhale {
-        background: color-mix(in srgb, var(--color-breathe) 20%, transparent);
-        color: var(--color-breathe);
-      }
-
-      .preset-card-container .phase-pill.apnea-full {
-        background: color-mix(in srgb, var(--color-hold) 20%, transparent);
-        color: var(--color-hold);
-      }
-
-      .preset-card-container .phase-pill.exhale {
-        background: color-mix(in srgb, var(--color-hold) 20%, transparent);
-        color: var(--color-hold);
-      }
-
-      .preset-card-container .phase-pill.apnea-empty {
-        background: color-mix(in srgb, var(--color-hold) 12%, transparent);
-        color: var(--color-hold);
-        opacity: 0.75;
-      }
-
-      .preset-card-container .phase-pill.activity {
-        background: color-mix(in srgb, var(--color-activity) 20%, transparent);
-        color: var(--color-activity);
       }
 
       .preset-card-container .round-pill-meta {
